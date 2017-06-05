@@ -2,14 +2,15 @@
 #include "Companies.h"
 #include "Escapers.h"
 #include "Orders.h"
+#include "Rooms.h"
 
 struct SEscapeTechnion{
     int day;
-    Rooms *room;
-    Escapers *escapers;
-    Faculties *faculties;
-    Companies *companies;
-    Orders *orders;
+    List rooms;
+    List escapers;
+    List faculties;
+    Set companies;
+    List orders;
 };
 
 struct SFaculty{
@@ -17,4 +18,3 @@ struct SFaculty{
     Companies *company;
     int total_income;
 };
-

@@ -6,9 +6,6 @@
 #include "mtm_ex3.h"
 
 typedef struct SEscapeTechnion EscapeTechnion;
-
-
-
 typedef struct SFaculties Faculties;
 
 
