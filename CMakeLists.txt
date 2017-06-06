@@ -6,5 +6,5 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "-Wall -pedantic-errors -Werror -DNDEBUG")
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 
 
-set(SOURCE_FILES Rooms.c Rooms.h)
+set(SOURCE_FILES Rooms.c Rooms.h Orders.c Orders.h)
 add_executable(HW03_Part2 ${SOURCE_FILES})
