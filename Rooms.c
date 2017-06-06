@@ -12,10 +12,10 @@ typedef struct SRooms{
     int difficulty;
 //    Companies *company;
 } Room;
-jh
 
 //requires that PARSER pass on deconstucted working_hrs
-roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty , Room *newRoom)
+roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
+                      , Room *newRoom)
 {
     newRoom = malloc(sizeof(Room));
     if (newRoom == NULL){
