@@ -1,5 +1,6 @@
 #include "Rooms.h"
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct SRooms{
     char *email;
@@ -14,15 +15,16 @@ typedef struct SRooms{
 
 
 //requires that PARSER pass on deconstucted working_hrs
-RoomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty , Room *newRoom)
+roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty , Room *newRoom)
 {
-    Room *newRoom = malloc(sizeof(Room));
+    newRoom = malloc(sizeof(Room));
     if (newRoom == NULL){
-        return ROOM_OUT_OF_MEMORY;
+        return ROOMS_OUT_OF_MEMORY;
     }
-    newRoom->email = malloc(strlen(email));
+    newRoom->email = malloc(strlen(email) + 1);
     if (newRoom->email == NULL){
-        return ROOM_OUT_OF_MEMORY;
+        free(newRoom);
+        return ROOMS_OUT_OF_MEMORY;
     }
     strcpy(newRoom->email , email);
     newRoom->id = id;
@@ -31,5 +33,39 @@ RoomResult createRoom(char *email , int id , int price , int num_ppl , int time_
     newRoom->time_start = time_start;
     newRoom->time_finish = time_finish;
     newRoom->difficulty = difficulty;
+    return ROOMS_SUCCESS;
 }
 
+Room* copyRoom(Room roomToCopy)
+{
+    Room *copyOfRoom;
+    copyOfRoom = malloc(sizeof(Room));
+    if(copyOfRoom == NULL){
+        return NULL;
+    }
+
+    copyOfRoom->email = malloc(strlen(roomToCopy.email));
+    if(copyOfRoom->email == NULL){
+        return NULL;
+    }
+
+    strcpy(copyOfRoom->email , roomToCopy.email);
+    copyOfRoom->difficulty = roomToCopy.difficulty;
+    copyOfRoom->time_finish = roomToCopy.time_finish;
+    copyOfRoom->time_start = roomToCopy.time_start;
+    copyOfRoom->num_of_ppl = roomToCopy.num_of_ppl;
+    copyOfRoom->price = roomToCopy.price;
+    copyOfRoom->id = roomToCopy.id;
+    return copyOfRoom;
+}
+
+roomResult removeRoom(Room *room)
+{
+    //Check if this test is relavent
+    if(room == NULL){
+        return ROOMS_NULL_PARAMETER;
+    }
+    free(room->email);
+    free(room);
+    return ROOMS_SUCCESS;
+}

@@ -5,27 +5,36 @@
 
 typedef struct SRooms Rooms;
 
-typedef enum roomResult_t {
-    //SET_SUCCESS,
-    ROOM_OUT_OF_MEMORY,
-    ROOM_NULL_ARGUMENT,
-    //SET_ITEM_ALREADY_EXISTS,
-    //SET_ITEM_DOES_NOT_EXIST
+typedef enum {
+    ROOMS_OUT_OF_MEMORY, // You should exit program after this error
+    ROOMS_INVALID_COMMAND_LINE_PARAMETERS, // You should exit program after this error
+    ROOMS_CANNOT_OPEN_FILE, // You should exit program after this error
+    ROOMS_NULL_PARAMETER,
+    ROOMS_INVALID_PARAMETER,
+    ROOMS_EMAIL_ALREADY_EXISTS,
+    ROOMS_COMPANY_EMAIL_DOES_NOT_EXIST,
+    ROOMS_CLIENT_EMAIL_DOES_NOT_EXIST,
+    ROOMS_ID_ALREADY_EXIST,
+    ROOMS_ID_DOES_NOT_EXIST,
+    ROOMS_CLIENT_IN_ROOM,
+    ROOMS_ROOM_NOT_AVAILABLE,
+    ROOMS_RESERVATION_EXISTS,
+    ROOMS_NO_ROOMS_AVAILABLE,
+    ROOMS_SUCCESS,
+} roomResult;
+/*
+roomResult createRoom();
 
-} RoomResult;
+roomResult removeRoom();
 
-RoomResult createRoom();
+roomResult copyRoom();
 
-RoomResult freeRoom();
+roomResult checkAvailable();
 
-RoomResult copyRoom();
+roomResult addEscaperToRoom();
 
-RoomResult checkAvailable();
+roomResult sortRoom();
 
-RoomResult addEscaperToRoom();
-
-RoomResult sortRoom();
-
-RoomResult
-
+roomResult
+*/
 #endif //HW03_PART2_ROOMS_H
