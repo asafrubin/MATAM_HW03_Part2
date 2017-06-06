@@ -1,24 +1,26 @@
 #ifndef HW03_PART2_ESCAPERS_H
 #define HW03_PART2_ESCAPERS_H
 
-typedef struct SEscapers Escapers;
+typedef struct SEscaper Escaper;
 
 typedef enum {
-    MTM_OUT_OF_MEMORY, // You should exit program after this error
-    MTM_INVALID_COMMAND_LINE_PARAMETERS, // You should exit program after this error
-    MTM_CANNOT_OPEN_FILE, // You should exit program after this error
-    MTM_NULL_PARAMETER,
-    MTM_INVALID_PARAMETER,
-    MTM_EMAIL_ALREADY_EXISTS,
-    MTM_COMPANY_EMAIL_DOES_NOT_EXIST,
-    MTM_CLIENT_EMAIL_DOES_NOT_EXIST,
-    MTM_ID_ALREADY_EXIST,
-    MTM_ID_DOES_NOT_EXIST,
-    MTM_CLIENT_IN_ROOM,
-    MTM_ROOM_NOT_AVAILABLE,
-    MTM_RESERVATION_EXISTS,
-    MTM_NO_ROOMS_AVAILABLE,
+    ESCAPER_OUT_OF_MEMORY, // You should exit program after this error
+    ESCAPER_NULL_PARAMETER,
+    ESCAPER_INVALID_PARAMETER,
+    ESCAPER_EMAIL_ALREADY_EXISTS,
+    ESCAPER_COMPANY_EMAIL_DOES_NOT_EXIST,
+    ESCAPER_CLIENT_EMAIL_DOES_NOT_EXIST,
     ESCAPER_SUCCESS,
-} EscapersErrorCode;
+} EscaperResult;
+
+//free the inside of the escaper
+void freeEscaper(Escaper *escaper);
+
+//copies an escaper element and returns a pointer to a new element
+Escaper *copyElement(Escaper *escaper);
+
+EscaperResult createEscaper(char *name, TechnionFaculty faculty, int skill, Escaper *newElement);
+
+void removeEscaper(Escaper *escaper);
 
 #endif //HW03_PART2_ESCAPERS_H

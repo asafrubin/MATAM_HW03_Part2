@@ -6,5 +6,5 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "-Wall -pedantic-errors -Werror -DNDEBUG")
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 
 
-set(SOURCE_FILES Rooms.c Rooms.h Orders.c Orders.h)
+set(SOURCE_FILES main.c list.h mtm_ex3.h set.h libmtm/win64/libmtm.a EscapeTechnion.c EscapeTechnion.h Rooms.c Rooms.h Orders.c Orders.h Escapers.c Escapers.h Companies.c Companies.h parser.c)
 add_executable(HW03_Part2 ${SOURCE_FILES})
