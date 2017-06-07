@@ -1,7 +1,7 @@
 #ifndef HW03_PART2_ESCAPERS_H
 #define HW03_PART2_ESCAPERS_H
 
-typedef struct SEscaper Escaper;
+typedef struct SEscaper *Escaper;
 
 typedef enum {
     ESCAPER_OUT_OF_MEMORY, // You should exit program after this error

@@ -5,9 +5,11 @@
 #include "set.h"
 #include "mtm_ex3.h"
 #include "Escapers.h"
+#include "Orders.h"
+#include "Rooms.h"
+#include "Companies.h"
 
 typedef struct SEscapeTechnion EscapeTechnion;
-typedef struct SFaculties Faculties;
 
 
 /**

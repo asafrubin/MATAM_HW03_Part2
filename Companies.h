@@ -3,7 +3,7 @@
 
 #include "mtm_ex3.h"
 
-typedef struct SCompany Company;
+typedef struct SCompany *Company;
 
 typedef enum {
     CMP_OUT_OF_MEMORY, // You should exit program after this error
@@ -12,11 +12,15 @@ typedef enum {
     CMP_SUCCESS,
 } CompanyResult;
 
-void freeCompany(Company *company);
+int compareCompanies(Company firstCompany , Company secondCompany);
 
-Company *copyCompany(Company *company);
+void freeCompany(Company company);
 
-CompanyResult createCompany(char *email, TechnionFaculty faculty, Company *newCompany);
+Company copyCompany(Company company);
+
+CompanyResult createCompany(char *email, TechnionFaculty faculty, Company newCompany);
+
+CompanyResult getCompanyRooms(Company targetCompany , void *rooms);
 
 
 #endif //HW03_PART2_COMPANIES_H

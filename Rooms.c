@@ -11,13 +11,13 @@ typedef struct SRooms{
     int time_finish;
     int difficulty;
 //    Companies *company;
-} Room;
+} *Room;
 
 //requires that PARSER pass on deconstucted working_hrs
 roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
-                      , Room *newRoom)
+                      , Room newRoom)
 {
-    newRoom = malloc(sizeof(Room));
+    newRoom = malloc(sizeof(*newRoom));
     if (newRoom == NULL){
         return ROOMS_OUT_OF_MEMORY;
     }
@@ -36,30 +36,30 @@ roomResult createRoom(char *email , int id , int price , int num_ppl , int time_
     return ROOMS_SUCCESS;
 }
 
-Room* copyRoom(Room roomToCopy)
+Room copyRoom(Room roomToCopy)
 {
-    Room *copyOfRoom;
-    copyOfRoom = malloc(sizeof(Room));
+    Room copyOfRoom;
+    copyOfRoom = malloc(sizeof(*copyOfRoom));
     if(copyOfRoom == NULL){
         return NULL;
     }
 
-    copyOfRoom->email = malloc(strlen(roomToCopy.email));
+    copyOfRoom->email = malloc(strlen(roomToCopy->email));
     if(copyOfRoom->email == NULL){
         return NULL;
     }
 
-    strcpy(copyOfRoom->email , roomToCopy.email);
-    copyOfRoom->difficulty = roomToCopy.difficulty;
-    copyOfRoom->time_finish = roomToCopy.time_finish;
-    copyOfRoom->time_start = roomToCopy.time_start;
-    copyOfRoom->num_of_ppl = roomToCopy.num_of_ppl;
-    copyOfRoom->price = roomToCopy.price;
-    copyOfRoom->id = roomToCopy.id;
+    strcpy(copyOfRoom->email , roomToCopy->email);
+    copyOfRoom->difficulty = roomToCopy->difficulty;
+    copyOfRoom->time_finish = roomToCopy->time_finish;
+    copyOfRoom->time_start = roomToCopy->time_start;
+    copyOfRoom->num_of_ppl = roomToCopy->num_of_ppl;
+    copyOfRoom->price = roomToCopy->price;
+    copyOfRoom->id = roomToCopy->id;
     return copyOfRoom;
 }
 
-roomResult removeRoom(Room *room)
+roomResult removeRoom(Room room)
 {
     //Check if this test is relavent
     if(room == NULL){

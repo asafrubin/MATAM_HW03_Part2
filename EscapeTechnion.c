@@ -5,14 +5,13 @@
 #include "Rooms.h"
 #include <stdlib.h>
 
-struct SEscapeTechnion{
+typedef struct SEscapeTechnion{
     int day;
     Set rooms;
     Set escapers;
-    List faculties;
     Set companies;
     List orders;
-};
+} EscapeTechnion;
 
 
 MtmErrorCode escaperAdd(char *email, TechnionFaculty faculty, int skill, Set escapers)
@@ -27,7 +26,7 @@ MtmErrorCode escaperAdd(char *email, TechnionFaculty faculty, int skill, Set esc
     }
 
     setResult = setAdd(escapers, newEscaper);
-    destroyEscaper(newEscaper);
+    removeEscaper(newEscaper);
 
     if(setResult != SET_SUCCESS){
         return (MtmErrorCode)setResult;
@@ -35,4 +34,5 @@ MtmErrorCode escaperAdd(char *email, TechnionFaculty faculty, int skill, Set esc
 
     return MTM_SUCCESS;
 }
+
 

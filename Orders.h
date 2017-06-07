@@ -21,6 +21,6 @@ typedef enum {
     ORDERS_SUCCESS,
 } orderResult;
 
-typedef struct SOrders Orders;
+typedef struct SOrders *Orders;
 
 #endif //HW03_PART2_ORDERS_H

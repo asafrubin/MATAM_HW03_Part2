@@ -3,7 +3,7 @@
 
 #include "EscapeTechnion.h"
 
-typedef struct SRooms Rooms;
+typedef struct SRooms *Rooms;
 
 typedef enum {
     ROOMS_OUT_OF_MEMORY, // You should exit program after this error

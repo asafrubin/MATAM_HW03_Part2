@@ -2,7 +2,8 @@
 #include "EscapeTechnion.h"
 #include "Rooms.h"
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
+#include <stdbool.h>
 
 struct SCompany{
     char *email;
@@ -10,18 +11,30 @@ struct SCompany{
     Set rooms;
 };
 
-void freeCompany(Company *company)
+/**
+ * Compares to companies to check if emails are identical
+ * @param firstCompany : first company to compare
+ * @param secondCompany : first company to compare
+ * @return : 0 companies are identical |or| <0 or >0 if not identical (same as strcmp func)
+ */
+int compareCompanies(Company firstCompany , Company secondCompany)
+{
+    return strcmp(firstCompany->email , secondCompany->email));
+}
+
+
+void freeCompany(Company company)
 {
     free(company->email);
     setDestroy(company->rooms);
     free(company);
 }
 
-Company *copyCompany(Company *company)
+Company copyCompany(Company company)
 {
-    Company *newCompany=NULL;
+    Company newCompany=NULL;
 
-    newCompany = malloc(sizeof(Company));
+    newCompany = malloc(sizeof(*newCompany));
     if(newCompany == NULL){
         return NULL;
     }
@@ -45,7 +58,7 @@ Company *copyCompany(Company *company)
     return newCompany;
 }
 
-CompanyResult createCompany(char *email, TechnionFaculty faculty, Company *newCompany)
+CompanyResult createCompany(char *email, TechnionFaculty faculty, Company newCompany)
 {
     if(email == NULL){
         return CMP_NULL_PARAMETER;
@@ -68,5 +81,11 @@ CompanyResult createCompany(char *email, TechnionFaculty faculty, Company *newCo
 
     newCompany->rooms = NULL;
 
+    return CMP_SUCCESS;
+}
+
+CompanyResult getCompanyRooms(Company targetCompany , SetElement rooms)
+{
+    &rooms = targetCompany->&rooms;
     return CMP_SUCCESS;
 }
