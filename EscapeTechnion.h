@@ -41,6 +41,6 @@ MtmErrorCode mtmEscaperRecommend(char *email, int numOfPpl, EscapeTechnion *esca
 
 MtmErrorCode mtmReportDay(EscapeTechnion *escapeTechnion);
 
-MtmErrorCode mtmReportBest(EscapeTechnion *escapeTechnion);
+MtmErrorCode mtmReportBest(EscapeTechnion *escapeTechnion);a
 
 #endif //HW03_PART2_ESCAPETECHNION_H
