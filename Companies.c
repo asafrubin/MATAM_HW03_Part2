@@ -89,3 +89,8 @@ CompanyResult getCompanyRooms(Company targetCompany , SetElement rooms)
     &rooms = targetCompany->&rooms;
     return CMP_SUCCESS;
 }
+
+CompanyResult createRoomsSet(Company setCompany)
+{
+    setCompany->rooms = setCreate(copyRoom , )
+}

@@ -27,7 +27,7 @@ roomResult createRoom();
 
 roomResult removeRoom();
 
-roomResult copyRoom();
+Room copyRoom(Room roomToCopy);
 
 roomResult checkAvailable();
 
