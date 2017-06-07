@@ -1,9 +1,11 @@
 #include "Companies.h"
-#include "EscapeTechnion.h"
 #include "Rooms.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "set.h"
+
+
 
 struct SCompany{
     char *email;
@@ -33,30 +35,12 @@ void freeCompany(Company company)
 Company copyCompany(Company company)
 {
     Company newCompany=NULL;
-
-    newCompany = malloc(sizeof(*newCompany));
-    if(newCompany == NULL){
-        return NULL;
-    }
-    newCompany->rooms = NULL;
+    createCompany(company->email , company->faculty , newCompany);
     newCompany->rooms = setCopy(company->rooms);
-    if(newCompany->rooms == NULL){
-        free(newCompany);
-        return NULL;
-    }
-
-    newCompany->email = malloc( strlen(company->email) + 1);
-    if(newCompany->email == NULL){
-        setDestroy(newCompany->rooms);
-        free(newCompany);
-
-        return NULL;
-    }
-    strcpy(newCompany->email, company->email);
-    newCompany->faculty = company->faculty;
-
     return newCompany;
 }
+
+
 
 CompanyResult createCompany(char *email, TechnionFaculty faculty, Company newCompany)
 {
@@ -79,18 +63,14 @@ CompanyResult createCompany(char *email, TechnionFaculty faculty, Company newCom
     strcpy(newCompany->email, email);
     newCompany->faculty = faculty;
 
-    newCompany->rooms = NULL;
+    copySetElements copyRoomPtr;
+    copyRoomPtr = (SetElement)copyRoom;
+    freeSetElements removeRoomPtr;
+    removeRoomPtr = (SetElement)removeRoom;
+    compareSetElements compareRoomPtr;
+    compareRoomPtr = (SetElement)compareRoom;
+
+    newCompany->rooms = setCreate(copyRoomPtr , removeRoomPtr , compareRoomPtr);
 
     return CMP_SUCCESS;
-}
-
-CompanyResult getCompanyRooms(Company targetCompany , SetElement rooms)
-{
-    &rooms = targetCompany->&rooms;
-    return CMP_SUCCESS;
-}
-
-CompanyResult createRoomsSet(Company setCompany)
-{
-    setCompany->rooms = setCreate(copyRoom , )
 }

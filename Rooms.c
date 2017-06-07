@@ -69,3 +69,8 @@ roomResult removeRoom(Room room)
     free(room);
     return ROOMS_SUCCESS;
 }
+
+int compareRoom(Room firstRoom , Room secondRoom)
+{
+    return ((firstRoom->id) - (secondRoom->id));
+}
