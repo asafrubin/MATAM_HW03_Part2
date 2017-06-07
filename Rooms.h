@@ -1,9 +1,7 @@
 #ifndef HW03_PART2_ROOMS_H
 #define HW03_PART2_ROOMS_H
 
-#include "EscapeTechnion.h"
-
-typedef struct SRooms *Rooms;
+typedef struct SRooms *Room;
 
 typedef enum {
     ROOMS_OUT_OF_MEMORY, // You should exit program after this error
@@ -22,10 +20,10 @@ typedef enum {
     ROOMS_NO_ROOMS_AVAILABLE,
     ROOMS_SUCCESS,
 } roomResult;
-/*
+
 roomResult createRoom();
 
-roomResult removeRoom();
+roomResult removeRoom(Room roomToRemove);
 
 Room copyRoom(Room roomToCopy);
 
@@ -35,6 +33,6 @@ roomResult addEscaperToRoom();
 
 roomResult sortRoom();
 
-roomResult
-*/
+int compareRoom(Room firstRoom , Room secondRoom);
+
 #endif //HW03_PART2_ROOMS_H
