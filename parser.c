@@ -4,32 +4,23 @@
 #include "EscapeTechnion.h"
 #include "mtm_ex3.h"
 
-
 /**************************************************************/
-/*  The following defines are used to translate the commands  */
-/*  and the sub commands to integers for the switch case      */
+/*  The following enum is used to translate the commands      */
+/*  and the sub commands to enum type for the switch case     */
 /**************************************************************/
-#define COMPANY 100
-#define COMPANY_ADD 101
-#define COMPANY_REMOVE 102
-#define ROOM 200
-#define ROOM_ADD 201
-#define ROOM_REMOVE 202
-#define ESCAPER 300
-#define ESCAPER_ADD 301
-#define ESCAPER_REMOVE 302
-#define ESCAPER_ORDER 303
-#define ESCAPER_RECOMMEND 304
-#define REPORT 400
-#define REPORT_DAY 401
-#define REPORT_BEST 402
-#define INVALID_COMMAND -1
 
-static MtmErrorCode handleFullCommand(int command, char *string, FILE *input, FILE *output);
-static int commandToInt(char *command, char *subCommand);
-static int subCommandCompanyToInt(int command, char *subCommand);
+typedef enum{cmdCompany, cmdCompanyAdd, cmdCompanyRemove, cmdRoom, cmdRoomAdd, cmdRoomRemove,
+cmdEscaper, cmdEscaperAdd, cmdEscaperRemove, cmdEscaperOrder, cmdEscaperRecommend,
+cmdReport, cmdReportDay, cmdReportBest, cmdInvalidCommand}MtmCommand;
 
-void parser(FILE *inputStream, FILE *outputStream, EscapeTechnion *escapeTechnion)
+static MtmErrorCode handleFullCommand(MtmCommand command, char *string, FILE *input, FILE *output, EscapeTechnion escapeTechnion);
+static MtmCommand commandToEnum(char *command, char *subCommand);
+static MtmCommand subCommandCompanyToEnum(MtmCommand command, char *subCommand);
+static MtmCommand subCommandRoomToEnum(MtmCommand command, char *subCommand);
+static MtmCommand subCommandEscaperToEnum(MtmCommand command, char *subCommand);
+static MtmCommand subCommandReportToEnum(MtmCommand command, char *subCommand);
+
+void parser(FILE *inputStream, FILE *outputStream, EscapeTechnion escapeTechnion)
 {
     char string[MAX_LEN] = { 0 };
     char *command = NULL, *subCommand = NULL;
@@ -43,94 +34,127 @@ void parser(FILE *inputStream, FILE *outputStream, EscapeTechnion *escapeTechnio
             continue;
         }
         subCommand = strtok(NULL, delimeter);
-        result = handleFullCommand( commandToInt(command, subCommand), string, inputStream, outputStream );
+        result = handleFullCommand( commandToEnum(command, subCommand), string, inputStream, outputStream, escapeTechnion );
         if(result ==  MTM_OUT_OF_MEMORY) {
             return;
         }
     }
 }
 
-static int commandToInt(char *command, char *subCommand)
+static MtmCommand commandToEnum(char *command, char *subCommand)
 {
     if( strcmp("company", command) == 0 ){
-        return subCommandCompanyToInt(COMPANY, subCommand);
+        return subCommandCompanyToEnum(cmdCompany, subCommand);
     }
     else if( strcmp("room", command) == 0){
-        return ROOM;
+        return subCommandRoomToEnum(cmdRoom, subCommand);
     }
     else if( strcmp("escaper", command) == 0){
-        return ESCAPER;
+        return subCommandEscaperToEnum(cmdEscaper, subCommand);
     }
-    else if(strcmp("report", command) == 0){
-        return REPORT;
+    else if( strcmp("report", command) == 0){
+        return subCommandReportToEnum(cmdReport, subCommand);
     }
     else
-        return INVALID_COMMAND;
+        return cmdInvalidCommand;
 }
 
-static int subCommandCompanyToInt(int command, char *subCommand)
+static MtmCommand subCommandCompanyToEnum(MtmCommand command, char *subCommand)
 {
     if( strcmp("add", subCommand) == 0 ){
-        return COMPANY_ADD;
+        return cmdCompanyAdd;
     }
     else if( strcmp("remove", subCommand ) == 0){
-        return COMPANY_REMOVE;
+        return cmdCompanyRemove;
     }
-        return INVALID_COMMAND;
+        return cmdInvalidCommand;
 }
 
-static int subCommandRoomToInt(int command, char *subCommand)
+static MtmCommand subCommandRoomToEnum(MtmCommand command, char *subCommand)
 {
     if( strcmp("add", subCommand) == 0 ){
-        return ROOM_ADD;
+        return cmdRoomAdd;
     }
     else if( strcmp("remove", subCommand ) == 0){
-        return ROOM_REMOVE;
+        return cmdRoomRemove;
     }
-    return INVALID_COMMAND;
+    return cmdInvalidCommand;
 }
 
-static int subCommandEscaperToInt(int command, char *subCommand){
+static MtmCommand subCommandEscaperToEnum(MtmCommand command, char *subCommand){
     if( strcmp("add", subCommand) == 0 ){
-        return ESCAPER_ADD;
+        return cmdEscaperAdd;
     }
     else if( strcmp("remove", subCommand ) == 0){
-        return ESCAPER_REMOVE;
+        return cmdEscaperRemove;
     }
     else if( strcmp("order", subCommand ) == 0){
-        return ESCAPER_ORDER;
+        return cmdEscaperOrder;
     }
     else if( strcmp("recommend", subCommand ) == 0){
-        return ESCAPER_RECOMMEND;
+        return cmdEscaperRecommend;
     }
 
-    return INVALID_COMMAND;
+    return cmdInvalidCommand;
 }
-static MtmErrorCode handleFullCommand(int command, char *string, FILE *input, FILE *output)
+
+static MtmCommand subCommandReportToEnum(MtmCommand command, char *subCommand) {
+    if (strcmp("day", subCommand) == 0) {
+        return cmdReportDay;
+    } else if (strcmp("best", subCommand) == 0) {
+        return cmdReportBest;
+    }
+
+    return cmdInvalidCommand;
+}
+static MtmErrorCode handleFullCommand(MtmCommand command, char *string, FILE *input, FILE *output, EscapeTechnion escapeTechnion)
 {
+    char *email;
+    TechnionFaculty faculty;
+    int roomId, roomPrice, roomNumOfPpl, roomOpenHour, roomCloseHour, roomDifficulty, skill, requestedTime;
+
     switch(command) {
-        case COMPANY_ADD:
-            parseCompanyAdd()
+        case cmdCompanyAdd:
+            parseCompanyAdd(string, &email, &faculty);
+            mtmCompanyAdd(email, faculty, &escapeTechnion);
             break;
-        case COMPANY_REMOVE:
+        case cmdCompanyRemove:
+            parseCompanyRemove(string, &email);
+            mtmCompanyRemove(email, &escapeTechnion);
             break;
-        case ROOM_ADD:
+        case cmdRoomAdd:
+            parseRoomAdd(string, &email, &roomId, &roomPrice, &roomNumOfPpl, &roomOpenHour,
+                         &roomCloseHour, &roomDifficulty);
+            mtmRoomAdd(email, roomId, roomPrice, roomNumOfPpl, roomOpenHour,roomCloseHour,
+                       roomDifficulty, &escapeTechnion);
             break;
-        case ROOM_REMOVE:
+        case cmdRoomRemove:
+            parseRoomRemove(string, faculty, roomId);
+            mtmRoomRemove(faculty, roomId, &escapeTechnion);
             break;
-        case ESCAPER_ADD:
+        case cmdEscaperAdd:
+            parseEscaperAdd(&email, &faculty, &skill );
+            mtmEscaperAdd(email, faculty, skill, &escapeTechnion);
             break;
-        case ESCAPER_REMOVE:
+        case cmdEscaperRemove:
+            parseEscaperRemove(&email);
+            mtmEscaperRemove(email, &escapeTechnion);
             break;
-        case ESCAPER_ORDER:
+        case cmdEscaperOrder:
+            parseEscaperOrder(&email, &faculty, &roomId, &requestedTime, &roomNumOfPpl );
+            mtmEscaperOrder(email, faculty, roomId, requestedTime, roomNumOfPpl, &escapeTechnion);
             break;
-        case ESCAPER_RECOMMEND:
+        case cmdEscaperRecommend:
+            parseEscaperRecommend(&email, roomNumOfPpl);
+            mtmEscaperRecommend(email, roomNumOfPpl, &escapeTechnion);
             break;
-        case REPORT_DAY:
+        case cmdReportDay:
+            mtmReportDay(&escapeTechnion);
             break;
-        case REPORT_BEST:
+        case cmdReportBest:
+            mtmReportBest(&escapeTechnion);
             break;
-        case INVALID_COMMAND:
+        case cmdInvalidCommand:
             mtmPrintErrorMessage(output, MTM_INVALID_PARAMETER);
             return MTM_INVALID_PARAMETER;
             break;
