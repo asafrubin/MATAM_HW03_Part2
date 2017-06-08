@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct SRooms{
+struct SRooms{
     char *email;
     int id;
     int price;
@@ -10,7 +10,7 @@ typedef struct SRooms{
     int time_start;
     int time_finish;
     int difficulty;
-} *Room;
+};
 
 //requires that PARSER pass on deconstucted working_hrs
 roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
