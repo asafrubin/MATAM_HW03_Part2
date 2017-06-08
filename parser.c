@@ -2,8 +2,11 @@
 #include <strings.h>
 #include <memory.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <stdbool.h>
 #include "EscapeTechnion.h"
 #include "mtm_ex3.h"
+
 
 /**************************************************************/
 /*  The following enum is used to translate the commands      */
@@ -37,7 +40,7 @@ static MtmCommand subCommandEscaperToEnum(MtmCommand command, char *subCommand);
 static MtmCommand subCommandReportToEnum(MtmCommand command, char *subCommand);
 
 
-void parser(FILE *inputStream, FILE *outputStream, EscapeTechnion escapeTechnion)
+MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion escapeTechnion)
 {
     char string[MAX_LEN] = { 0 };
     char *command = NULL, *subCommand = NULL;
@@ -53,9 +56,11 @@ void parser(FILE *inputStream, FILE *outputStream, EscapeTechnion escapeTechnion
         subCommand = strtok(NULL, delimiter);
         result = handleFullCommand( commandToEnum(command, subCommand), string, outputStream, escapeTechnion );
         if(result ==  MTM_OUT_OF_MEMORY) {
-            return;
+            return result;
         }
     }
+
+    return MTM_SUCCESS;
 }
 
 static MtmCommand commandToEnum(char *command, char *subCommand)
@@ -420,4 +425,69 @@ static MtmErrorCode parseEscaperRecommend(char **escperEmail, int *roomNumOfPpl)
     *roomNumOfPpl = atoi( strtok(NULL, delimiter) );
 
     return MTM_SUCCESS;
+}
+
+static void fileClose(FILE *inputStream, FILE *outputstream, bool iflag, bool oflag)
+{
+    if(iflag == true){
+        fclose(inputStream);
+    }
+    if(oflag == true){
+        fclose(outputstream);
+    }
+}
+
+
+int main(int argc, char *argv[])
+{
+    int c;
+    bool iflag = false, oflag = false;
+    FILE *inputStream, *outputStream;
+
+    while( (c = getopt(argc, argv, "io") != -1 )) {
+        switch (c) {
+            case 'i':
+                iflag = true;
+                inputStream = fopen(optarg, "r");
+                if (inputStream == NULL) {
+                    mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                    return 0;
+                }
+                break;
+            case 'o':
+                oflag = true;
+                outputStream = fopen(optarg, "w");
+                if (outputStream == NULL) {
+                    mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                    return 0;
+                }
+                break;
+            default:
+                abort();
+                break;
+        }
+    }
+    if(iflag == false){
+        inputStream = stdin;
+    }
+    if(oflag == false){
+        outputStream = stdout;
+    }
+    EscapeTechnion escapeTechnion = NULL;
+    escapeTechnion = malloc( sizeof(*escapeTechnion) );
+    if(escapeTechnion == NULL){
+        fileClose(inputStream, outputStream, iflag, oflag);
+        mtmPrintErrorMessage(outputStream, MTM_OUT_OF_MEMORY);
+        return 0;
+    }
+    if( mtmInitEscapeTechnion(&escapeTechnion, outputStream) == MTM_OUT_OF_MEMORY ){
+        fileClose(inputStream, outputStream, iflag, oflag);
+        free(escapeTechnion);
+        return 0;
+    }
+
+    parser(inputStream, outputStream, escapeTechnion);
+    fileClose(inputStream, outputStream, iflag, oflag);
+
+    return 0;
 }

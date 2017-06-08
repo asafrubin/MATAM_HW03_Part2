@@ -43,4 +43,6 @@ MtmErrorCode mtmReportDay(EscapeTechnion *escapeTechnion);
 
 MtmErrorCode mtmReportBest(EscapeTechnion *escapeTechnion);
 
+MtmErrorCode mtmInitEscapeTechnion(EscapeTechnion *escapeTechnion, FILE *outputStream);
+
 #endif //HW03_PART2_ESCAPETECHNION_H

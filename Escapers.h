@@ -1,6 +1,8 @@
 #ifndef HW03_PART2_ESCAPERS_H
 #define HW03_PART2_ESCAPERS_H
 
+#include "mtm_ex3.h"
+
 typedef struct SEscaper *Escaper;
 
 typedef enum {
@@ -17,10 +19,10 @@ typedef enum {
 void freeEscaper(Escaper *escaper);
 
 //copies an escaper element and returns a pointer to a new element
-Escaper *copyElement(Escaper *escaper);
+Escaper copyElement(Escaper escaper);
 
-EscaperResult createEscaper(char *name, TechnionFaculty faculty, int skill, Escaper *newElement);
+Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperResult *result);
 
-void removeEscaper(Escaper *escaper);
+EscaperResult escaperGetEmail(Escaper escaper, char **email);
 
 #endif //HW03_PART2_ESCAPERS_H

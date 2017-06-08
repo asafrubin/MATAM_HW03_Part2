@@ -1,8 +1,9 @@
 #include "Escapers.h"
-#include "EscapeTechnion.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <assert.h>
+
+EscaperResult static checkEmail(char *name);
 
 struct SEscaper{
     char *email;
@@ -13,14 +14,27 @@ struct SEscaper{
 //free the inside of the escaper
 void freeEscaper(Escaper *escaper)
 {
-    free(escaper->email);
-    escaper->email = NULL;
+    if(*escaper == NULL){
+        return;
+    }
+    assert((*escaper)->email == NULL);
+
+    free( (*escaper)->email );
+    (*escaper)->email = NULL;
+    free( *escaper );
+    *escaper = NULL;
+
 }
 
 //copies an escaper element and returns a pointer to a new element
-Escaper *copyElement(Escaper *escaper)
+Escaper copyElement(Escaper escaper)
 {
-    Escaper *escaperCopy = malloc( sizeof(*escaperCopy) );
+    Escaper escaperCopy = NULL;
+
+    if(escaper == NULL){
+        return NULL;
+    }
+    escaperCopy = malloc( sizeof(*escaperCopy) );
     if(escaperCopy == NULL){
         return NULL;
     }
@@ -38,37 +52,74 @@ Escaper *copyElement(Escaper *escaper)
     return escaperCopy;
 }
 
-EscaperResult createEscaper(char *name, TechnionFaculty faculty, int skill, Escaper *newEscaper)
+Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperResult *result)
 {
+    Escaper newEscaper = NULL;
+
     if(name == NULL){
-        return ESCAPER_INVALID_PARAMETER;
+        *result = ESCAPER_INVALID_PARAMETER;
+        return NULL;
     }
     if(skill < 1 || 10 < skill){
-        return ESCAPER_INVALID_PARAMETER;
+        *result = ESCAPER_INVALID_PARAMETER;
+        return NULL;
     }
 
-    newEscaper = malloc(sizeof(Escaper));
+    if( checkEmail(name) != ESCAPER_SUCCESS){
+        *result = ESCAPER_INVALID_PARAMETER;
+        return NULL;
+    }
+
+    newEscaper = malloc(sizeof(struct SEscaper));
     if(newEscaper == NULL){
-        return ESCAPER_OUT_OF_MEMORY;
+        *result = ESCAPER_OUT_OF_MEMORY;
+        return NULL;
     }
 
     newEscaper->email = malloc( strlen(name) + 1 );
-    if(newEscaper->email == NULL){
+    if( newEscaper->email == NULL){
         free(newEscaper);
-        return ESCAPER_OUT_OF_MEMORY;
+        *result = ESCAPER_OUT_OF_MEMORY;
+        return NULL;
     }
-    strcpy(newEscaper->email, name);
+    strcpy( newEscaper->email, name);
     newEscaper->skill_level = skill;
     newEscaper->faculty = faculty;
+
+    *result = ESCAPER_SUCCESS;
+    return newEscaper;
+}
+
+//checking for a valid email
+EscaperResult static checkEmail(char *name)
+{
+    int counter = 0;
+    int i = 0;
+    while( name[i] != '\0' ){
+        if( name[i] == '@' ){
+            counter++;
+        }
+        i++;
+    }
+    if(counter == 0 || counter > 1){
+        return ESCAPER_INVALID_PARAMETER;
+    }
 
     return ESCAPER_SUCCESS;
 }
 
-void removeEscaper(Escaper *escaper)
+EscaperResult escaperGetEmail(Escaper escaper, char **email)
 {
     if(escaper == NULL){
-        retrun;
+        return ESCAPER_NULL_PARAMETER;
     }
-    free(escaper->email);
-    free(escaper);
+
+    assert(escaper->email == NULL);
+    *email = malloc( strlen(escaper->email) + 1 );
+    if(*email == NULL){
+        return ESCAPER_OUT_OF_MEMORY;
+    }
+    strcpy(*email, escaper->email);
+
+    return ESCAPER_SUCCESS;
 }
