@@ -9,8 +9,8 @@
 #include "Rooms.h"
 #include "Companies.h"
 
-typedef struct SEscapeTechnion *EscapeTechnion;
 
+typedef struct SEscapeTechnion *EscapeTechnion;
 
 /**
  * a function to add a client to the list.
@@ -37,7 +37,7 @@ MtmErrorCode mtmEscaperRemove(char *email, EscapeTechnion *escapeTechnion);
 MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty faculty, int roomId, int requestedTime,
                              int numOfPpl, EscapeTechnion *escapeTechnion);
 
-MtmErrorCode mtmEscaperRecommend(char *email, int numOfPpl, EscapeTechnion *escapeTechnion);
+MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnion *escapeTechnion);
 
 MtmErrorCode mtmReportDay(EscapeTechnion *escapeTechnion);
 

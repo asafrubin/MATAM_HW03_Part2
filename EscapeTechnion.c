@@ -6,15 +6,16 @@
 #include <stdlib.h>
 
 typedef struct SEscapeTechnion{
+    FILE *outputStream;
     int day;
     Set rooms;
     Set escapers;
     Set companies;
     List orders;
-} EscapeTechnion;
+};
 
 
-MtmErrorCode escaperAdd(char *email, TechnionFaculty faculty, int skill, Set escapers)
+MtmErrorCode mtmEscaperAdd(char *email, TechnionFaculty faculty, int skill, EscapeTechnion *escapeTechnion)
 {
     EscaperResult escaperResult;
     SetResult setResult;
@@ -25,7 +26,7 @@ MtmErrorCode escaperAdd(char *email, TechnionFaculty faculty, int skill, Set esc
         return (MtmErrorCode)escaperResult; // need to write a function to convert
     }
 
-    setResult = setAdd(escapers, newEscaper);
+    setResult = setAdd( (*escapeTechnion)->escapers, newEscaper);
     removeEscaper(newEscaper);
 
     if(setResult != SET_SUCCESS){
