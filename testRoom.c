@@ -8,8 +8,6 @@
 #include <stdlib.h>
 
 
-
-
 static bool testCreateRoom() {
     char *goodEmail = "asaf@gmail.com";
     char *badEmail1 = "nate@@gmail.com";

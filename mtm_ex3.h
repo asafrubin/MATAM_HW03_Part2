@@ -6,6 +6,7 @@
 /**
  * Maximal input line length
  */
+
 #define MAX_LEN 250
 
 /**

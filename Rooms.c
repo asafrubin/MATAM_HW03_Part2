@@ -1,6 +1,7 @@
 #include "Rooms.h"
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 roomResult static checkEmail(char *name);
 
@@ -81,8 +82,10 @@ roomResult removeRoom(Room room)
     if(room == NULL){
         return ROOMS_NULL_PARAMETER;
     }
+    assert(room->email == NULL);
     free(room->email);
     free(room);
+
     return ROOMS_SUCCESS;
 }
 

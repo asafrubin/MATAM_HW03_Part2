@@ -44,7 +44,7 @@ MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion
 {
     char string[MAX_LEN] = { 0 };
     char *command = NULL, *subCommand = NULL;
-    char *delimiter = " '\t'";
+    char *delimiter = " \t";
     MtmErrorCode result;
 
     while(feof(inputStream)){
