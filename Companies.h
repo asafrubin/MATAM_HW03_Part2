@@ -6,10 +6,14 @@
 typedef struct SCompany *Company;
 
 typedef enum {
-    CMP_OUT_OF_MEMORY, // You should exit program after this error
-    CMP_NULL_PARAMETER,
-    CMP_INVALID_PARAMETER,
-    CMP_SUCCESS,
+    COMPANY_OUT_OF_MEMORY, // You should exit program after this error
+    COMPANY_NULL_PARAMETER,
+    COMPANY_INVALID_PARAMETER,
+    ROOMS_ID_ALREADY_EXIST,
+    ROOMS_ID_DOES_NOT_EXIST,
+    ROOMS_NO_ROOMS_AVAILABLE,
+    COMPANY_EMAIL_DOES_NOT_EXIST,
+    COMPANY_SUCCESS
 } CompanyResult;
 
 int compareCompanies(Company firstCompany , Company secondCompany);

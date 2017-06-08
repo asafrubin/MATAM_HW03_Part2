@@ -10,7 +10,6 @@ typedef struct SRooms{
     int time_start;
     int time_finish;
     int difficulty;
-//    Companies *company;
 } *Room;
 
 //requires that PARSER pass on deconstucted working_hrs
@@ -38,24 +37,10 @@ roomResult createRoom(char *email , int id , int price , int num_ppl , int time_
 
 Room copyRoom(Room roomToCopy)
 {
-    Room copyOfRoom;
-    copyOfRoom = malloc(sizeof(*copyOfRoom));
-    if(copyOfRoom == NULL){
-        return NULL;
-    }
+    Room copyOfRoom = NULL;
+    createRoom(roomToCopy->email , roomToCopy->id , roomToCopy->price , roomToCopy->num_of_ppl , roomToCopy->time_start
+            , roomToCopy->time_finish , roomToCopy->difficulty , copyOfRoom);
 
-    copyOfRoom->email = malloc(strlen(roomToCopy->email));
-    if(copyOfRoom->email == NULL){
-        return NULL;
-    }
-
-    strcpy(copyOfRoom->email , roomToCopy->email);
-    copyOfRoom->difficulty = roomToCopy->difficulty;
-    copyOfRoom->time_finish = roomToCopy->time_finish;
-    copyOfRoom->time_start = roomToCopy->time_start;
-    copyOfRoom->num_of_ppl = roomToCopy->num_of_ppl;
-    copyOfRoom->price = roomToCopy->price;
-    copyOfRoom->id = roomToCopy->id;
     return copyOfRoom;
 }
 

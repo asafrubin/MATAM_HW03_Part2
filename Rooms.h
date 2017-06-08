@@ -9,9 +9,6 @@ typedef enum {
     ROOMS_CANNOT_OPEN_FILE, // You should exit program after this error
     ROOMS_NULL_PARAMETER,
     ROOMS_INVALID_PARAMETER,
-    ROOMS_EMAIL_ALREADY_EXISTS,
-    ROOMS_COMPANY_EMAIL_DOES_NOT_EXIST,
-    ROOMS_CLIENT_EMAIL_DOES_NOT_EXIST,
     ROOMS_ID_ALREADY_EXIST,
     ROOMS_ID_DOES_NOT_EXIST,
     ROOMS_CLIENT_IN_ROOM,
@@ -21,7 +18,8 @@ typedef enum {
     ROOMS_SUCCESS,
 } roomResult;
 
-roomResult createRoom();
+roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
+        , Room newRoom);
 
 roomResult removeRoom(Room roomToRemove);
 
