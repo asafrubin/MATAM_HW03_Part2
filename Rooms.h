@@ -1,6 +1,12 @@
 #ifndef HW03_PART2_ROOMS_H
 #define HW03_PART2_ROOMS_H
 
+#define MIN_OPEN_TIME 0
+#define MAX_OPEN_TIME 24
+#define MIN_DIFFICULTY 0
+#define MAX_DIFFICULTY 10
+
+
 typedef struct SRooms *Room;
 
 typedef enum {
@@ -18,8 +24,8 @@ typedef enum {
     ROOMS_SUCCESS,
 } roomResult;
 
-roomResult createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
-        , Room newRoom);
+Room createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
+        ,roomResult *result);
 
 roomResult removeRoom(Room roomToRemove);
 

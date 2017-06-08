@@ -19,16 +19,16 @@ static bool testCreateRoom() {
     Room room = NULL;
     roomResult result;
 
-    result = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty, room);
+    room = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
     ASSERT_TEST(result == ROOMS_SUCCESS);
     removeRoom(room);
-    result = createRoom(badEmail1, id, price, num_ppl, open_time, close_time, goodDifficulty, room);
+    room = createRoom(badEmail1, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
     ASSERT_TEST(result == ROOMS_INVALID_PARAMETER);
     removeRoom(room);
-    result = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, badDifficulty, room);
+    room = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, badDifficulty, &result);
     ASSERT_TEST(result == ROOMS_INVALID_PARAMETER);
     removeRoom(room);
-    result = createRoom(badEmail2, id, price, num_ppl, open_time, close_time, goodDifficulty, room);
+    room = createRoom(badEmail2, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
     ASSERT_TEST(result == ROOMS_INVALID_PARAMETER);
     removeRoom(room);
 
