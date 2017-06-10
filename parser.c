@@ -271,7 +271,7 @@ static TechnionFaculty stringToFaculty(char *string)
 /* command : company add                                      */
 /* parameters to parse : <email> <faculty>                    */
 /**************************************************************/
-static MtmErrorCode parseCompanyAdd(char **string, char **email, TechnionFaculty *faculty)
+static MtmErrorCode  parseCompanyAdd(char **string, char **email, TechnionFaculty *faculty)
 {
     char *parameter;
     char delimiter[] = " \n\t";
@@ -436,7 +436,6 @@ static void fileClose(FILE *inputStream, FILE *outputstream, bool iflag, bool of
         fclose(outputstream);
     }
 }
-
 
 int main(int argc, char *argv[])
 {

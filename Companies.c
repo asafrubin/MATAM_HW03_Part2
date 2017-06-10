@@ -1,9 +1,14 @@
 #include "Companies.h"
 #include "Rooms.h"
+#include "set.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "set.h"
+#include <assert.h>
+
+static SetElement setCopyOfRoom(SetElement roomToCopy);
+static void setRemoveRoom(SetElement room);
+static int setCompareRoom(SetElement firstRoom, SetElement secondRoom);
 
 struct SCompany{
     char *email;
@@ -11,9 +16,11 @@ struct SCompany{
     Set rooms;
 };
 
-CompanyResult translateRoomResult(int roomResult)
+static CompanyResult translateRoomResult(int roomResult)
 {
     switch(roomResult){
+        case ROOMS_INVALID_PARAMETER:
+            return COMPANY_INVALID_PARAMETER;
         case ROOMS_OUT_OF_MEMORY:
             return COMPANY_OUT_OF_MEMORY;
         case ROOMS_NULL_PARAMETER:
@@ -24,7 +31,7 @@ CompanyResult translateRoomResult(int roomResult)
     }
 }
 
-CompanyResult translateSetResult(int setResult)
+static CompanyResult translateSetResult(int setResult)
 {
     switch(setResult){
         case SET_OUT_OF_MEMORY:
@@ -32,9 +39,9 @@ CompanyResult translateSetResult(int setResult)
         case SET_NULL_ARGUMENT:
             return COMPANY_NULL_PARAMETER;
         case SET_ITEM_ALREADY_EXISTS:
-            return ROOMS_ID_ALREADY_EXIST;
+            return COMPANY_ROOM_ID_ALREADY_EXIST;
         case SET_ITEM_DOES_NOT_EXIST:
-            return ROOMS_ID_DOES_NOT_EXIST;
+            return COMPANY_ROOM_ID_DOES_NOT_EXIST;
         default:
             return COMPANY_SUCCESS;
     }
@@ -42,19 +49,31 @@ CompanyResult translateSetResult(int setResult)
 
 CompanyResult checkIfRoomExists(Company company , int id )
 {
-    Room room = NULL;
+    //Room room = NULL;
+    //roomResult createRoomResult;
 
-    roomResult createRoomResult = createRoom(company->email , id , NULL , NULL , NULL , NULL ,
-                                             NULL , room);
+
+    SET_FOREACH(Room, room, company->rooms){
+        if(id == getRoomId(room) ){
+            return COMPANY_ROOM_ID_ALREADY_EXIST;
+        }
+    }
+
+    return COMPANY_ROOM_ID_DOES_NOT_EXIST;
+
+
+    /*
+    room = createRoom(company->email , id , 0 , 0 , 0 , 0 , 0 , &createRoomResult);
     if(translateRoomResult(createRoomResult) != COMPANY_SUCCESS){
         return translateRoomResult(createRoomResult);
     }
     if(setIsIn(company->rooms , room)){
         removeRoom(room);
-        return ROOMS_ID_ALREADY_EXIST;
+        return COMPANY_ID_ALREADY_EXIST;
     }
     removeRoom(room);
-    return ROOMS_ID_DOES_NOT_EXIST;
+    return COMPANY_ID_DOES_NOT_EXIST;
+     */
 }
 
 
@@ -72,19 +91,19 @@ CompanyResult checkIfRoomExists(Company company , int id )
 CompanyResult addRoomToCompany(Company company , int id , int price , int num_ppl , int start_time , int
                                 finish_time , int difficulty)
 {
-    int roomResult;
+    roomResult roomResult;
     Room newRoom = NULL;
-    if(checkIfRoomExists(company , id) != ROOMS_SUCCESS){
-        removeRoom(newRoom);
-        return checkIfRoomExists(company , id);
+    SetResult setResult;
+    if(checkIfRoomExists(company, id) == COMPANY_ROOM_ID_ALREADY_EXIST){
+        return COMPANY_ROOM_ID_ALREADY_EXIST;
     }
-    roomResult = createRoom(company->email , id , price , num_ppl , start_time , finish_time , difficulty , newRoom);
+    newRoom = createRoom(company->email , id , price , num_ppl , start_time , finish_time , difficulty , &roomResult);
     if(translateRoomResult(roomResult) != COMPANY_SUCCESS){
         removeRoom(newRoom);
         return translateRoomResult(roomResult);
     }
-    roomResult = setAdd(company->rooms , newRoom);
-    if(translateRoomResult(roomResult) != COMPANY_SUCCESS){
+    setResult = setAdd(company->rooms , newRoom);
+    if(translateSetResult(setResult) != COMPANY_SUCCESS){
         removeRoom(newRoom);
         return translateRoomResult(roomResult);
     }
@@ -100,9 +119,8 @@ CompanyResult addRoomToCompany(Company company , int id , int price , int num_pp
  */
 int compareCompanies(Company firstCompany , Company secondCompany)
 {
-    return strcmp(firstCompany->email , secondCompany->email));
+    return strcmp(firstCompany->email , secondCompany->email);
 }
-
 
 void freeCompany(Company company)
 {
@@ -114,42 +132,164 @@ void freeCompany(Company company)
 Company copyCompany(Company company)
 {
     Company newCompany = NULL;
-    createCompany(company->email , company->faculty , newCompany);
+    CompanyResult companyResult;
+
+    newCompany = createCompany(company->email , company->faculty , &companyResult);
     newCompany->rooms = setCopy(company->rooms);
     return newCompany;
 }
 
-
-
-CompanyResult createCompany(char *email, TechnionFaculty faculty, Company newCompany)
+Company createCompany(char *email, TechnionFaculty faculty, CompanyResult *result)
 {
+    Company newCompany;
+
     if(email == NULL){
-        return COMPANY_NULL_PARAMETER;
-    }
-    if( faculty < 1 || 10 < faculty){
-        return COMPANY_INVALID_PARAMETER;
+        *result = COMPANY_NULL_PARAMETER;
+        return NULL;
     }
 
-    newCompany = malloc( sizeof(Company) );
+    newCompany = malloc( sizeof(*newCompany) );
     if(newCompany == NULL){
-        return COMPANY_OUT_OF_MEMORY;
+        *result =  COMPANY_OUT_OF_MEMORY;
+         return NULL;
     }
     newCompany->email = malloc(strlen(email) + 1);
     if(newCompany->email == NULL){
         free(newCompany);
-        return COMPANY_OUT_OF_MEMORY;
+        *result =  COMPANY_OUT_OF_MEMORY;
+        return NULL;
     }
     strcpy(newCompany->email, email);
     newCompany->faculty = faculty;
 
-    copySetElements copyRoomPtr;
-    copyRoomPtr = (SetElement)copyRoom;
-    freeSetElements removeRoomPtr;
-    removeRoomPtr = (SetElement)removeRoom;
-    compareSetElements compareRoomPtr;
-    compareRoomPtr = (SetElement)compareRoom;
+    newCompany->rooms = setCreate(setCopyOfRoom , setRemoveRoom , setCompareRoom);
+    if(newCompany->rooms == NULL){
+        freeCompany(newCompany);
+        *result = COMPANY_OUT_OF_MEMORY;
+        return NULL;
+    }
 
-    newCompany->rooms = setCreate(copyRoomPtr , removeRoomPtr , compareRoomPtr);
+    *result =  COMPANY_SUCCESS;
+
+    return newCompany;
+}
+
+CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num_ppl,int open_time,
+                             int close_time, int diffuculty, Company company)
+{
+    SetResult setResult;
+    roomResult roomResult;
+    Room newRoom;
+
+    if(company == NULL){
+        return COMPANY_NULL_PARAMETER;
+    }
+
+    newRoom = createRoom(companyEmail, roomId, roomPrice, num_ppl, open_time, close_time, diffuculty, &roomResult);
+    if(roomResult != ROOMS_SUCCESS){
+        return translateRoomResult(roomResult);
+    }
+    assert(newRoom == NULL);
+
+    setResult = setAdd(company->rooms, newRoom);
+    if(setResult != SET_SUCCESS){
+        removeRoom(newRoom);
+        return translateSetResult(setResult);
+    }
 
     return COMPANY_SUCCESS;
+}
+
+CompanyResult removeCompanyRoom(Company company, int roomId)
+{
+    SET_FOREACH(Room, room, company->rooms){
+        if(roomId == getRoomId(room)){
+            removeRoom(room);
+            return COMPANY_SUCCESS;
+        }
+    }
+
+    return COMPANY_ROOM_ID_DOES_NOT_EXIST;
+}
+
+static SetElement setCopyOfRoom(SetElement roomToCopy)
+{
+    return  (SetElement)copyRoom( (Room)roomToCopy );
+}
+
+static void setRemoveRoom(SetElement room)
+{
+    removeRoom( (Room)room );
+}
+
+static int setCompareRoom(SetElement firstRoom, SetElement secondRoom)
+{
+    return compareRoom(firstRoom, secondRoom);
+}
+
+CompanyResult companyRoomRemove(Company company, int roomId)
+{
+    if(company == NULL){
+        return COMPANY_NULL_PARAMETER;
+    }
+
+    SET_FOREACH(Room, room, company->rooms){
+        if(getRoomId(room) == roomId){
+            setRemove(company->rooms, room);
+            return COMPANY_SUCCESS;
+        }
+    }
+
+    return COMPANY_ROOM_ID_DOES_NOT_EXIST;
+}
+
+char *getCompanyEmail(Company company, CompanyResult *result)
+{
+    char *email;
+    email = malloc( strlen(company->email) + 1 );
+    if(email == NULL){
+        *result = COMPANY_OUT_OF_MEMORY;
+        return NULL;
+    }
+    strcpy(email, company->email);
+
+    *result = COMPANY_SUCCESS;
+
+    return email;
+}
+
+CompanyResult getCompanyFaculty(Company company, TechnionFaculty *faculty)
+{
+    if(company == NULL){
+        return COMPANY_NULL_PARAMETER;
+    }
+
+    *faculty = company->faculty;
+
+    return COMPANY_SUCCESS;
+}
+
+int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, double *best_calculation)
+    {
+    double temp_calculation=0;
+    Room best_room = NULL;
+
+    SET_FOREACH(Room, room, company->rooms){
+        temp_calculation = getRoomRecommendedCalculation(room, P_e, skill_level);
+        if(*best_calculation > temp_calculation){
+            best_room = room;
+            *best_calculation = temp_calculation;
+        }
+    }
+
+    return getRoomId(best_room);
+}
+
+int getCompanyRoomListSize(Company company)
+{
+    if(company == NULL){
+        return -1;
+    }
+    assert(company->rooms != NULL);
+    return setGetSize(company->rooms);
 }

@@ -1,12 +1,30 @@
 #include "test_utilities.h"
 #include "mtm_ex3.h"
+#include "Escapers.h"
 #include "Companies.h"
+#include "Orders.h"
+#include "EscapeTechnion.h"
+#include "set.h"
+#include "list.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 
+static bool testCreateCompany()
+{
+    Company newCompany;
+    char *companyEmail = "nate@gmail.com";
+    TechnionFaculty companyFaculty = COMPUTER_SCIENCE;
+    CompanyResult companyResult;
+
+    newCompany = createCompany(companyEmail, companyFaculty, &companyResult);
+    ASSERT_TEST(companyResult == COMPANY_SUCCESS);
+    ASSERT_TEST(newCompany != NULL);
+
+    return true;
+}
 
 static bool testCreateEscaper() {
 
@@ -45,28 +63,15 @@ static bool testCreateEscaper() {
 
 static bool testCopyElement()
 {
-    Escaper newEscaper = NULL;
-    Escaper copiedEscaper = NULL;
-    EscaperResult result;
-    char *goodEmail = "asaf@gmail.com", *copiedEmail = NULL;
-    int goodSkill = 9;
-    TechnionFaculty goodFaculty = COMPUTER_SCIENCE;
-
-
-    newEscaper = createEscaper(goodEmail, goodFaculty, goodSkill, &result);
-
-    copiedEscaper = copyElement(newEscaper);
-    escaperGetEmail( copiedEscaper, &copiedEmail );
-    ASSERT_TEST( strcmp(copiedEmail, goodEmail) ==  0 );
-    freeEscaper(&newEscaper);
-    freeEscaper(&copiedEscaper);
 
     return true;
 }
 
-int main (int argv, char** arc){
+int main (int argv, char** arc)
+{
 
     RUN_TEST(testCreateEscaper);
+    RUN_TEST(testCreateCompany);
     RUN_TEST(testCopyElement);
 
     return 0;

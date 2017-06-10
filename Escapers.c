@@ -108,18 +108,28 @@ EscaperResult static checkEmail(char *name)
     return ESCAPER_SUCCESS;
 }
 
-EscaperResult escaperGetEmail(Escaper escaper, char **email)
+char *escaperGetEmail(Escaper escaper, EscaperResult *result)
 {
+    char *email = NULL;
+
     if(escaper == NULL){
-        return ESCAPER_NULL_PARAMETER;
+        *result = ESCAPER_NULL_PARAMETER;
+        return NULL;
     }
 
     assert(escaper->email == NULL);
-    *email = malloc( strlen(escaper->email) + 1 );
-    if(*email == NULL){
-        return ESCAPER_OUT_OF_MEMORY;
+    email = malloc( strlen(escaper->email) + 1 );
+    if(email == NULL){
+        *result =  ESCAPER_OUT_OF_MEMORY;
+        return NULL;
     }
-    strcpy(*email, escaper->email);
+    strcpy(email, escaper->email);
+    *result =  ESCAPER_SUCCESS;
 
-    return ESCAPER_SUCCESS;
+    return email;
+}
+
+int escaperGetSkill(Escaper escaper)
+{
+    return escaper->skill_level;
 }

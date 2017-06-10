@@ -24,12 +24,18 @@ typedef enum {
     ROOMS_SUCCESS,
 } roomResult;
 
-Room createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
+Room createRoom(char *email, int id, int price, int num_ppl, int time_start, int time_finish, int difficulty
         ,roomResult *result);
 
-roomResult removeRoom(Room roomToRemove);
+
+
+void removeRoom(Room roomToRemove);
 
 Room copyRoom(Room roomToCopy);
+
+int getRoomId(Room room);
+
+double getRoomRecommendedCalculation(Room room, int P_e, int skill_level);
 
 roomResult checkAvailable();
 
@@ -37,6 +43,6 @@ roomResult addEscaperToRoom();
 
 roomResult sortRoom();
 
-int compareRoom(Room firstRoom , Room secondRoom);
+int compareRoom(Room firstRoom, Room secondRoom);
 
 #endif //HW03_PART2_ROOMS_H

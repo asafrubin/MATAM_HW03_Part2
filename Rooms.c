@@ -1,7 +1,9 @@
 #include "Rooms.h"
+#include "set.h"
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 
 roomResult static checkEmail(char *name);
 
@@ -60,7 +62,7 @@ Room createRoom(char *email , int id , int price , int num_ppl , int time_start 
     newRoom->time_finish = time_finish;
     newRoom->difficulty = difficulty;
 
-    *result =  ROOMS_SUCCESS;
+    *result = ROOMS_SUCCESS;
 
     return newRoom;
 }
@@ -76,20 +78,19 @@ Room copyRoom(Room roomToCopy)
     return copyOfRoom;
 }
 
-roomResult removeRoom(Room room)
+void removeRoom(Room room)
 {
     //Check if this test is relavent
     if(room == NULL){
-        return ROOMS_NULL_PARAMETER;
+        return;
     }
     assert(room->email == NULL);
     free(room->email);
     free(room);
 
-    return ROOMS_SUCCESS;
 }
 
-int compareRoom(Room firstRoom , Room secondRoom)
+int compareRoom(Room firstRoom, Room secondRoom)
 {
     return ((firstRoom->id) - (secondRoom->id));
 }
@@ -109,4 +110,23 @@ roomResult static checkEmail(char *name)
     }
 
     return ROOMS_SUCCESS;
+}
+
+int getRoomId(Room room)
+{
+    if(room == NULL){
+        return -1;
+    }
+
+    return room->id;
+}
+
+int getRoomPrice(Room room)
+{
+    return room->price;
+}
+
+double getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
+{
+    return (pow((room->num_of_ppl - P_e), 2) + pow((room->difficulty - skill_level), 2));
 }

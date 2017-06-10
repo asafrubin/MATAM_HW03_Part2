@@ -23,6 +23,8 @@ Escaper copyElement(Escaper escaper);
 
 Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperResult *result);
 
-EscaperResult escaperGetEmail(Escaper escaper, char **email);
+int escaperGetSkill(Escaper escaper);
+
+char *escaperGetEmail(Escaper escaper, EscaperResult *result);
 
 #endif //HW03_PART2_ESCAPERS_H
