@@ -57,6 +57,8 @@ CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num
 
 CompanyResult companyRoomRemove(Company company, int roomId);
 
+CompanyResult checkIfCompanyRoomIsOpenById(Company company, int roomId, int req_hour);
+
 //void setRemoveRoom(SetElement room);
 
 //SetElement setCopyOfRoom(SetElement roomToCopy);

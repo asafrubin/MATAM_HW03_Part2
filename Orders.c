@@ -58,7 +58,7 @@ Order createOrder(char *escaperEmail, TechnionFaculty escaperFaculty, TechnionFa
     Order newOrder;
     bool discount;
 
-    if(req_num_of_ppl <= 0 || roomPrice < 0 || req_day < 0 || req_hour < 0 || req_hour > 23){
+    if(req_num_of_ppl <= 0 || roomPrice < 0 || req_day < 0 || req_hour < 0 || req_hour > 23 || roomID < 0){
         *result = ORDER_INVALID_PARAMETER;
         return NULL;
     }

@@ -63,7 +63,7 @@ roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
     assert(email != NULL);
 
     if(time_start < MIN_OPEN_TIME || time_start > MAX_OPEN_TIME || time_finish < MIN_OPEN_TIME
-       || time_finish > MAX_OPEN_TIME || time_start > time_finish){
+       || time_finish > MAX_OPEN_TIME || time_start >= time_finish){
         return ROOMS_INVALID_PARAMETER;
 
     }
@@ -80,6 +80,16 @@ roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
     }
 
     return ROOMS_SUCCESS;
+}
+
+roomResult roomCheckIfOpen(Room room, int req_hour)
+{
+    assert(room != NULL);
+    if(room->time_start <= req_hour && req_hour < room->time_finish){
+        return ROOMS_SUCCESS;
+    }
+
+    return ROOMS_ROOM_NOT_AVAILABLE;
 }
 
 Room copyRoom(Room roomToCopy)

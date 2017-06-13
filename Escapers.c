@@ -80,7 +80,7 @@ Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperRes
         *result = ESCAPER_INVALID_PARAMETER;
         return NULL;
     }
-    if(skill < 1 || 10 < skill){
+    if(skill < 1 || 10 < skill || faculty == UNKNOWN){
         *result = ESCAPER_INVALID_PARAMETER;
         return NULL;
     }

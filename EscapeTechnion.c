@@ -299,6 +299,27 @@ static char *mtmGetCompanyEmailByFaculty(Set Companies, TechnionFaculty companyF
     return NULL;
 }
 
+static TechnionFaculty mtmGetCompanyFacultyByEmail(Set companies, char *email, MtmErrorCode *mtmErrorCode)
+{
+    char *tempEmail;
+    CompanyResult companyResult;
+    TechnionFaculty faculty;
+
+    SET_FOREACH(Company, company, companies){
+        tempEmail = getCompanyEmail(company, &companyResult);
+        assert(tempEmail != NULL);
+        if(strcmp(tempEmail, email) == 0 ){
+            companyResult = getCompanyFaculty(company, &faculty);
+            assert(companyResult == COMPANY_SUCCESS);
+            *mtmErrorCode = MTM_SUCCESS;
+            return faculty;
+        }
+    }
+
+    *mtmErrorCode = MTM_COMPANY_EMAIL_DOES_NOT_EXIST;
+    return UNKNOWN;
+}
+
 static MtmErrorCode mtmGetEscaperFacultyByEmail(Set escapers, char *escaperEmail, TechnionFaculty *faculty)
 {
     char *tempEmail = NULL;
@@ -435,13 +456,44 @@ static MtmErrorCode checkIfOrderNotCollide(EscapeTechnion escapeTechnion, char *
     return MTM_SUCCESS;
 }
 
+static MtmErrorCode checkCompanyParameters(char *companyEmail, TechnionFaculty companyFaculty)
+{
+    if(companyEmail == NULL){
+        return MTM_INVALID_PARAMETER;
+    }
+    if( checkEmail(companyEmail) != MTM_SUCCESS){
+        return MTM_INVALID_PARAMETER;
+    }
+    if(companyFaculty == UNKNOWN){
+        return MTM_INVALID_PARAMETER;
+    }
+
+    return MTM_SUCCESS;
+}
+
 static MtmErrorCode checkIfRoomAvailable(EscapeTechnion escapeTechnion, TechnionFaculty faculty,
                                          int roomId, int req_hour, int req_day)
 {
+    int tempDay, tempHour, tempId;
+    TechnionFaculty tempFaculty;
+    CompanyResult companyResult;
+
+    SET_FOREACH(Company, company, escapeTechnion->companies){
+        getCompanyFaculty(company, &tempFaculty);
+        if(tempFaculty == faculty){
+            companyResult = checkIfCompanyRoomIsOpenById(company, roomId, req_hour);
+            if(companyResult != COMPANY_SUCCESS){
+                return MTM_ROOM_NOT_AVAILABLE;
+            }
+        }
+    }
 
     LIST_FOREACH(Order, order, escapeTechnion->orders){
-        if(getOrderDay(order) == req_day && getOrderHour(order) == req_hour && getOrderRoomFaculty(order) == faculty
-                && getOrderRoomId(order) == roomId){
+        tempDay = getOrderDay(order);
+        tempHour = getOrderHour(order);
+        tempFaculty = getOrderRoomFaculty(order);
+        tempId = getOrderRoomId(order);
+        if(tempDay == req_day && tempHour == req_hour && tempFaculty  == faculty && tempId == roomId){
             return MTM_ROOM_NOT_AVAILABLE;
         }
     }
@@ -453,7 +505,17 @@ MtmErrorCode mtmCompanyAdd(char *companyEmail, TechnionFaculty companyFaculty, E
 {
     Company newCompany;
     CompanyResult companyResult;
+    MtmErrorCode mtmErrorCode;
     SetResult setResult;
+
+    mtmErrorCode = checkCompanyParameters(companyEmail, companyFaculty);
+    if(mtmErrorCode != MTM_SUCCESS){
+        return mtmErrorCode;
+    }
+    mtmErrorCode = mtmCheckIfEmailExists(escapeTechnion, companyEmail);
+    if(mtmErrorCode != MTM_SUCCESS){
+        return MTM_EMAIL_ALREADY_EXISTS;
+    }
 
     newCompany = createCompany(companyEmail, companyFaculty, &companyResult);
     if(companyResult != COMPANY_SUCCESS){
@@ -504,6 +566,7 @@ MtmErrorCode mtmRoomAdd(char *email, int id, int price,int numOfPpl,int openHour
     Company company=NULL;
     CompanyResult companyResult;
     MtmErrorCode mtmErrorCode;
+    TechnionFaculty companyFaculty;
 
     if(email == NULL){
         return MTM_INVALID_PARAMETER;
@@ -512,15 +575,17 @@ MtmErrorCode mtmRoomAdd(char *email, int id, int price,int numOfPpl,int openHour
     if(companyResult == COMPANY_INVALID_PARAMETER){
         return MTM_INVALID_PARAMETER;
     }
-
-    company = mtmGetCompanyByEmail(email, escapeTechnion, &mtmErrorCode);
+    companyFaculty = mtmGetCompanyFacultyByEmail(escapeTechnion->companies, email, &mtmErrorCode);
     if(mtmErrorCode != MTM_SUCCESS){
         return mtmErrorCode;
     }
-    assert(company != NULL);
-    companyResult = checkIfRoomExists(company, id);
-    if(companyResult == COMPANY_ROOM_ID_ALREADY_EXIST){
-        return MTM_ID_ALREADY_EXIST;
+    mtmErrorCode = checkIfCompanyRoomExist(escapeTechnion, companyFaculty, id);
+    if(mtmErrorCode == MTM_ID_ALREADY_EXIST){
+        return mtmErrorCode;
+    }
+    company = mtmGetCompanyByEmail(email, escapeTechnion, &mtmErrorCode);
+    if(mtmErrorCode != MTM_SUCCESS){
+        return MTM_OUT_OF_MEMORY;
     }
 
     companyResult = addCompanyRoom( email, id, price, numOfPpl, openHour, closeHour, difficulty, company );
@@ -569,13 +634,13 @@ MtmErrorCode mtmEscaperAdd(char *email, TechnionFaculty faculty, int skill, Esca
     Escaper newEscaper = NULL;
     MtmErrorCode mtmErrorCode;
 
-    mtmErrorCode = mtmCheckIfEmailExists(escapeTechnion, email);
-    if(mtmErrorCode != MTM_SUCCESS){
-        return MTM_EMAIL_ALREADY_EXISTS;
-    }
     newEscaper = createEscaper(email, faculty, skill, &escaperResult);
     if(escaperResult != ESCAPER_SUCCESS){
         return translateEscaperResultToMtm(escaperResult);
+    }
+    mtmErrorCode = mtmCheckIfEmailExists(escapeTechnion, email);
+    if(mtmErrorCode != MTM_SUCCESS){
+        return MTM_EMAIL_ALREADY_EXISTS;
     }
 
     setResult = setAdd( escapeTechnion->escapers, newEscaper);
@@ -624,7 +689,7 @@ MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty companyFaculty,
     MtmErrorCode mtmErrorCode;
     TechnionFaculty escaperFaculty;
 
-    if(numOfPpl < 0 || requestedTime < 0 || requestedTime >= 23 || requestedDay < 0){
+    if(numOfPpl <= 0 || requestedTime < 0 || requestedTime >= 23 || requestedDay < 0 || companyFaculty == UNKNOWN){
         return MTM_INVALID_PARAMETER;
     }
     if(checkEmail(escaperEmail) != MTM_SUCCESS){
@@ -639,7 +704,7 @@ MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty companyFaculty,
     if(checkIfOrderNotCollide(escapeTechnion, escaperEmail, requestedDay, requestedTime) != MTM_SUCCESS){
         return MTM_CLIENT_IN_ROOM;
     }
-    if(checkIfRoomAvailable(escapeTechnion, companyFaculty, roomId, requestedDay, requestedTime) != MTM_SUCCESS){
+    if(checkIfRoomAvailable(escapeTechnion, companyFaculty, roomId, requestedTime, requestedDay) != MTM_SUCCESS){
         return MTM_ROOM_NOT_AVAILABLE;
     }
     companyEmail = mtmGetCompanyEmailByFaculty(escapeTechnion->companies, companyFaculty);
@@ -655,7 +720,7 @@ MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty companyFaculty,
     }
 
     newOrder = createOrder(escaperEmail, escaperFaculty, companyFaculty, roomId, numOfPpl,
-                           requestedTime, requestedDay, escapeTechnion->day, roomPrice, &orderResult);
+                           requestedTime, requestedDay, roomPrice, &orderResult);
 
     if(orderResult != ORDER_SUCCESS){
         free(companyEmail);
@@ -728,7 +793,7 @@ MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnio
         for(int time=0; time < MAX_HOUR; time++){
             assert(recommendedRoomId > 0 || roomPrice > 0);
             new_order = createOrder(escaperEmail, escaperFaculty, companyFaculty, recommendedRoomId, numOfPpl,
-                                    time, day, escapeTechnion->day, roomPrice, &orderResult);
+                                    time, day, roomPrice, &orderResult);
             if(orderResult == ORDER_SUCCESS){
                listResult = listInsertFirst(escapeTechnion->orders, new_order);
                 if(listResult != LIST_SUCCESS){

@@ -25,6 +25,8 @@ static CompanyResult translateRoomResult(int roomResult)
             return COMPANY_OUT_OF_MEMORY;
         case ROOMS_NULL_PARAMETER:
             return COMPANY_NULL_PARAMETER;
+        case ROOMS_ROOM_NOT_AVAILABLE:
+            return COMPANY_NO_ROOMS_AVAILABLE;
         default:
             return COMPANY_SUCCESS;
 
@@ -155,7 +157,11 @@ Company createCompany(char *email, TechnionFaculty faculty, CompanyResult *resul
     Company newCompany;
 
     if(email == NULL){
-        *result = COMPANY_NULL_PARAMETER;
+        *result = COMPANY_INVALID_PARAMETER;
+        return NULL;
+    }
+    if(faculty == UNKNOWN){
+        *result = COMPANY_INVALID_PARAMETER;
         return NULL;
     }
 
@@ -236,6 +242,23 @@ CompanyResult removeCompanyRoom(Company company, int roomId)
     }
 
     return COMPANY_ROOM_ID_DOES_NOT_EXIST;
+}
+
+CompanyResult checkIfCompanyRoomIsOpenById(Company company, int roomId, int req_hour)
+{
+    int tempID;
+    roomResult roomResult;
+    SET_FOREACH(Room, room, company->rooms){
+       tempID =  getRoomId(room);
+        if(tempID == roomId){
+            roomResult = roomCheckIfOpen(room, req_hour);
+            if(roomResult != ROOMS_SUCCESS){
+                return translateRoomResult(ROOMS_ROOM_NOT_AVAILABLE);
+            }
+        }
+    }
+
+    return COMPANY_SUCCESS;
 }
 
 static SetElement setCopyOfRoom(SetElement roomToCopy)

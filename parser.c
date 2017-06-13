@@ -73,7 +73,7 @@ MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion
             return result;
         }
         if(result != MTM_SUCCESS){
-            mtmPrintErrorMessage(outputStream, result);
+            mtmPrintErrorMessage(stderr, result);
         }
     }
 
@@ -458,7 +458,7 @@ int main(int argc, char *argv[])
                 string = optarg;
                 inputStream = fopen(string, "r");
                 if (inputStream == NULL) {
-                    mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                    mtmPrintErrorMessage(stderr, MTM_CANNOT_OPEN_FILE);
                     return 0;
                 }
                 break;
@@ -467,12 +467,12 @@ int main(int argc, char *argv[])
                 string = optarg;
                 outputStream = fopen(string, "w+");
                 if (outputStream == NULL) {
-                    mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                    mtmPrintErrorMessage(stderr, MTM_CANNOT_OPEN_FILE);
                     return 0;
                 }
                 break;
             case '?':
-                mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                mtmPrintErrorMessage(stderr, MTM_INVALID_COMMAND_LINE_PARAMETERS);
                 return 0;
             default:
                 abort();
@@ -489,11 +489,13 @@ int main(int argc, char *argv[])
     escapeTechnion = mtmCreateEscapeTechnion(outputStream);
     if(escapeTechnion == NULL){
         fileClose(inputStream, outputStream, iflag, oflag);
-        mtmPrintErrorMessage(outputStream, MTM_OUT_OF_MEMORY);
+        mtmPrintErrorMessage(stderr, MTM_OUT_OF_MEMORY);
         return 0;
     }
 
     parser(inputStream, outputStream, escapeTechnion);
+
+    mtmDestroyEscapeTechnion(escapeTechnion);
 
     fileClose(inputStream, outputStream, iflag, oflag);
 

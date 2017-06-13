@@ -44,6 +44,7 @@ roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
 
 double getRoomRecommendedCalculation(Room room, int P_e, int skill_level);
 
+roomResult roomCheckIfOpen(Room room, int req_hour);
 
 int compareRoom(Room firstRoom, Room secondRoom);
 
