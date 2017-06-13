@@ -52,17 +52,19 @@ static int calculatePrice(bool discount , int roomPrice)
     return roomPrice;
 }
 
-Order createOrder(char *escaperEmail,TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty, int roomID,
-                  int req_num_of_ppl, int req_hour, int req_day, int system_day, int roomPrice, orderResult *result)
+Order createOrder(char *escaperEmail, TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty, int roomID,
+                  int req_num_of_ppl, int req_hour, int req_day, int roomPrice, orderResult *result)
 {
     Order newOrder;
     bool discount;
 
-    if(req_num_of_ppl < 0 || roomPrice < 0 || req_day < 0 || req_hour < 0 || req_hour > 23){
+    if(req_num_of_ppl <= 0 || roomPrice < 0 || req_day < 0 || req_hour < 0 || req_hour > 23){
         *result = ORDER_INVALID_PARAMETER;
+        return NULL;
     }
     if( checkEmail(escaperEmail) != ORDER_SUCCESS ){
         *result =  ORDER_INVALID_PARAMETER;
+        return NULL;
     }
 
     newOrder = malloc(sizeof(*newOrder));
@@ -86,7 +88,6 @@ Order createOrder(char *escaperEmail,TechnionFaculty escaperFaculty, TechnionFac
     newOrder->companyFaculty = companyFaculty;
     newOrder->roomID = roomID;
     newOrder->req_num_of_ppl = req_num_of_ppl;
-    //newOrder->effective_ppl = effective_ppl;
     newOrder->req_hour = req_hour;
     newOrder->req_day = req_day;
     newOrder->price = calculatePrice(discount , roomPrice);

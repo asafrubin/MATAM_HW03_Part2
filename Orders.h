@@ -24,7 +24,7 @@ typedef enum {
 } orderResult;
 
 Order createOrder(char *escaperEmail,TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty, int roomID,
-                  int req_num_of_ppl, int req_hour, int req_day, int system_day, int roomPrice, orderResult *result);
+                  int req_num_of_ppl, int req_hour, int req_day, int roomPrice, orderResult *result);
 
 Order copyOrder(Order order_to_copy);
 
