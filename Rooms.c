@@ -28,18 +28,9 @@ Room createRoom(char *email , int id , int price , int num_ppl , int time_start 
         *result = ROOMS_NULL_PARAMETER;
         return NULL;
     }
-    if(time_start < MIN_OPEN_TIME || time_start > MAX_OPEN_TIME || time_finish < MIN_OPEN_TIME || time_finish > MAX_OPEN_TIME){
-        *result = ROOMS_INVALID_PARAMETER;
-        return NULL;
-    }
 
-    if(difficulty < MIN_DIFFICULTY || difficulty > MAX_DIFFICULTY){
-        *result = ROOMS_INVALID_PARAMETER;
-        return NULL;
-    }
-
-    if( checkEmail(email) != ROOMS_SUCCESS ){
-        *result = ROOMS_INVALID_PARAMETER;
+    if(checkRoomParameters(email, id, price, num_ppl, time_start, time_finish, difficulty) == ROOMS_INVALID_PARAMETER){
+        *result =  ROOMS_INVALID_PARAMETER;
         return NULL;
     }
 
@@ -63,8 +54,32 @@ Room createRoom(char *email , int id , int price , int num_ppl , int time_start 
     newRoom->difficulty = difficulty;
 
     *result = ROOMS_SUCCESS;
-
     return newRoom;
+}
+
+roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
+                               int time_start, int time_finish, int difficulty)
+{
+    assert(email != NULL);
+
+    if(time_start < MIN_OPEN_TIME || time_start > MAX_OPEN_TIME || time_finish < MIN_OPEN_TIME
+       || time_finish > MAX_OPEN_TIME || time_start > time_finish){
+        return ROOMS_INVALID_PARAMETER;
+
+    }
+    if(difficulty < MIN_DIFFICULTY || difficulty > MAX_DIFFICULTY || num_ppl <= 0 || id <= 0){
+        return ROOMS_INVALID_PARAMETER;
+    }
+
+    if( (price % 4) != 0 ){
+        return ROOMS_INVALID_PARAMETER;
+    }
+
+    if( checkEmail(email) != ROOMS_SUCCESS ){
+        return ROOMS_INVALID_PARAMETER;
+    }
+
+    return ROOMS_SUCCESS;
 }
 
 Room copyRoom(Room roomToCopy)
@@ -80,13 +95,11 @@ Room copyRoom(Room roomToCopy)
 
 void removeRoom(Room room)
 {
-    //Check if this test is relavent
-    if(room == NULL){
-        return;
-    }
-    assert(room->email == NULL);
-    free(room->email);
-    free(room);
+    if(room){
+        assert(room->email != NULL);
+        free(room->email);
+        free(room);
+        }
 
 }
 
@@ -123,10 +136,23 @@ int getRoomId(Room room)
 
 int getRoomPrice(Room room)
 {
+    assert(room != NULL);
     return room->price;
+}
+
+int getRoomNumOfPpl(Room room)
+{
+    assert(room != NULL);
+    return room->num_of_ppl;
 }
 
 double getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
 {
-    return (pow((room->num_of_ppl - P_e), 2) + pow((room->difficulty - skill_level), 2));
+    return ( pow( (room->num_of_ppl - P_e), 2) + pow( (room->difficulty - skill_level), 2) );
+}
+
+int getRoomDifficulty(Room room)
+{
+    assert(room != NULL);
+    return room->difficulty;
 }

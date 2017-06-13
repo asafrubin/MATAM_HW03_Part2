@@ -1,4 +1,5 @@
 #include "Escapers.h"
+#include "set.h"
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
@@ -12,22 +13,23 @@ struct SEscaper{
 };
 
 //free the inside of the escaper
-void freeEscaper(Escaper *escaper)
+void freeEscaper(Escaper escaper)
 {
-    if(*escaper == NULL){
-        return;
+    if(escaper) {
+        free(escaper->email);
+        escaper->email = NULL;
+        free(escaper);
+        escaper = NULL;
     }
-    assert((*escaper)->email == NULL);
+}
 
-    free( (*escaper)->email );
-    (*escaper)->email = NULL;
-    free( *escaper );
-    *escaper = NULL;
-
+void SetFreeEscaper(SetElement escaper)
+{
+    freeEscaper( (SetElement)escaper );
 }
 
 //copies an escaper element and returns a pointer to a new element
-Escaper copyElement(Escaper escaper)
+Escaper escaperCopyElement(Escaper escaper)
 {
     Escaper escaperCopy = NULL;
 
@@ -50,6 +52,23 @@ Escaper copyElement(Escaper escaper)
     escaperCopy->skill_level = escaper->skill_level;
 
     return escaperCopy;
+}
+
+SetElement setEscaperCopyElement(SetElement escaper)
+{
+    return (SetElement)escaperCopyElement( (Escaper)escaper );
+}
+
+int escaperCompare(Escaper escaper1, Escaper escaper2)
+{
+    assert(escaper1 != NULL);
+    assert(escaper2 != NULL);
+    return strcmp( escaper1->email, escaper2->email);
+}
+
+int SetEscaperCompare(SetElement escaper1, SetElement escaper2)
+{
+    return escaperCompare( (Escaper)escaper1, (Escaper)escaper2 );
 }
 
 Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperResult *result)
@@ -117,7 +136,7 @@ char *escaperGetEmail(Escaper escaper, EscaperResult *result)
         return NULL;
     }
 
-    assert(escaper->email == NULL);
+    assert(escaper->email != NULL);
     email = malloc( strlen(escaper->email) + 1 );
     if(email == NULL){
         *result =  ESCAPER_OUT_OF_MEMORY;
@@ -132,4 +151,10 @@ char *escaperGetEmail(Escaper escaper, EscaperResult *result)
 int escaperGetSkill(Escaper escaper)
 {
     return escaper->skill_level;
+}
+
+TechnionFaculty escaperGetFaculty(Escaper escaper)
+{
+    assert(escaper != NULL);
+    return escaper->faculty;
 }

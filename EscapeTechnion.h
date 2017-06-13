@@ -6,7 +6,6 @@
 #include "mtm_ex3.h"
 #include "Escapers.h"
 #include "Orders.h"
-#include "Rooms.h"
 #include "Companies.h"
 
 
@@ -34,6 +33,8 @@ MtmErrorCode mtmReportDay(EscapeTechnion escapeTechnion);
 
 MtmErrorCode mtmReportBest(EscapeTechnion escapeTechnion);
 
-MtmErrorCode mtmInitEscapeTechnion(EscapeTechnion *escapeTechnion, FILE *outputStream);
+EscapeTechnion mtmCreateEscapeTechnion(FILE *outputStream);
+
+void mtmDestroyEscapeTechnion(EscapeTechnion escapeTechnion);
 
 #endif //HW03_PART2_ESCAPETECHNION_H

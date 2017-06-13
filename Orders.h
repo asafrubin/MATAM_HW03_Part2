@@ -23,10 +23,16 @@ typedef enum {
     ORDER_SUCCESS,
 } orderResult;
 
-Order createOrder(char *escaperEmail, TechnionFaculty faculty, int roomID , int req_num_of_ppl ,
-                  int req_hour , int req_day, int system_day, orderResult *result);
+Order createOrder(char *escaperEmail,TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty, int roomID,
+                  int req_num_of_ppl, int req_hour, int req_day, int system_day, int roomPrice, orderResult *result);
 
-orderResult freeOrder(Order order);
+Order copyOrder(Order order_to_copy);
+
+ListElement listCopyOrder(ListElement order_to_copy);
+
+void freeOrder(Order order);
+
+void listFreeOrder(ListElement order);
 
 int getOrderDay(Order order);
 
@@ -34,11 +40,21 @@ int getOrderHour(Order order);
 
 int getOrderRoomId(Order order);
 
+int getOrderPrice(Order order);
+
 char *getOrderEmail(Order order);
 
 void increaseOrderDay(Order order);
 
-TechnionFaculty getOrderFaculty(Order order);
+List createOrderDayArrivedFilteredList(List ListOfOrders);
+
+List createOrderDayNotArrivedFilteredList(List ListOfOrders);
+
+void sortOrdersByHour(List orders);
+
+TechnionFaculty getOrderRoomFaculty(Order order);
+
+void printOrder(FILE *outputStream, Order order, int escaperSkill, int roomDifficulty, char *companyEmail);
 
 
 
