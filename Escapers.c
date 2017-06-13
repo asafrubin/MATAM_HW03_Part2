@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
+#include <string.h>
 
 EscaperResult static checkEmail(char *name);
 
