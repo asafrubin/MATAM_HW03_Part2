@@ -65,7 +65,7 @@ static bool testCreateRoom() {
     //tests room calculation
     room_recommended_calculation = getRoomRecommendedCalculation(room, P_e, skill_level);
     ASSERT_TEST(room_recommended_calculation == 53);
-k
+
     //tests compare room
     test = compareRoom(room, copy_of_room);
     ASSERT_TEST(test == 0);
