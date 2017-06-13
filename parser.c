@@ -67,7 +67,7 @@ MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion
         if(command[0] == '#' || command[0] == '\n'){
             continue;
         }
-        subCommand = strtok(NULL, delimiter);
+        subCommand = strtok(NULL, " \t\n");
         result = handleFullCommand( commandToEnum(command, subCommand), string, outputStream, escapeTechnion );
         if(result ==  MTM_OUT_OF_MEMORY) {
             return result;
@@ -405,8 +405,8 @@ static MtmErrorCode parseEscaperOrder(char **escaperEmail, TechnionFaculty *facu
     strcpy(*escaperEmail, parameter);
     *faculty = stringToFaculty( atoi (strtok(NULL, delimiter)) );
     *roomId = atoi( strtok(NULL, delimiter) );
-    *requestedTime = atoi( strtok(NULL, delimiter) );
     *requestedDay = atoi( strtok(NULL, delimiter) );
+    *requestedTime = atoi( strtok(NULL, delimiter) );
     *roomNumOfPpl = atoi( strtok(NULL, delimiter) );
 
     return MTM_SUCCESS;

@@ -252,13 +252,11 @@ CompanyResult checkIfCompanyRoomIsOpenById(Company company, int roomId, int req_
        tempID =  getRoomId(room);
         if(tempID == roomId){
             roomResult = roomCheckIfOpen(room, req_hour);
-            if(roomResult != ROOMS_SUCCESS){
-                return translateRoomResult(ROOMS_ROOM_NOT_AVAILABLE);
+            return translateRoomResult(roomResult);
             }
         }
-    }
 
-    return COMPANY_SUCCESS;
+    return COMPANY_ROOM_ID_DOES_NOT_EXIST;
 }
 
 static SetElement setCopyOfRoom(SetElement roomToCopy)
