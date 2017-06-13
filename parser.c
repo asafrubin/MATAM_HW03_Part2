@@ -20,7 +20,7 @@ cmdReport, cmdReportDay, cmdReportBest, cmdInvalidCommand}MtmCommand;
 /**************************************************************/
 /*  Start Functions decleration  block                        */
 /**************************************************************/
-static TechnionFaculty stringToFaculty(char *string);
+static TechnionFaculty stringToFaculty(int id);
 static MtmErrorCode parseEscaperRecommend(char **escperEmail, int *roomNumOfPpl);
 static MtmErrorCode parseEscaperOrder(char **escaperEmail, TechnionFaculty *faculty, int *roomId,
                                       int *requestedTime, int *requestedDay, int *roomNumOfPpl );
@@ -61,7 +61,7 @@ MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion
     char *delimiter = " \t";
     MtmErrorCode result;
 
-    while(feof(inputStream)){
+    while(!feof(inputStream)){
         fgets(string, MAX_LEN, inputStream);
         command = strtok(string, delimiter);
         if(command[0] == '#' || command[0] == '\n'){
@@ -71,6 +71,9 @@ MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion
         result = handleFullCommand( commandToEnum(command, subCommand), string, outputStream, escapeTechnion );
         if(result ==  MTM_OUT_OF_MEMORY) {
             return result;
+        }
+        if(result != MTM_SUCCESS){
+            mtmPrintErrorMessage(outputStream, result);
         }
     }
 
@@ -170,7 +173,7 @@ static MtmErrorCode handleFullCommand(MtmCommand command, char *string, FILE *ou
         case cmdRoomAdd:
             parseRoomAdd(&string, &email, &roomId, &roomPrice, &roomNumOfPpl, &roomOpenHour,
                          &roomCloseHour, &roomDifficulty);
-            result = mtmRoomAdd(email, roomId, roomPrice, roomNumOfPpl, roomOpenHour,roomCloseHour,
+            result = mtmRoomAdd(email, roomId, roomPrice, roomNumOfPpl, roomOpenHour, roomCloseHour,
                        roomDifficulty, escapeTechnion);
             free(email);
             return result;
@@ -222,64 +225,48 @@ static MtmErrorCode handleFullCommand(MtmCommand command, char *string, FILE *ou
     return MTM_SUCCESS;
 }
 
-static TechnionFaculty stringToFaculty(char *string)
+static TechnionFaculty stringToFaculty(int id)
 {
-    if(strcmp(string, "CIVIL_ENGINEERING") == 0){
-        return CIVIL_ENGINEERING;
+    switch(id){
+        case 0:
+            return CIVIL_ENGINEERING;
+        case 1:
+            return MECHANICAL_ENGINEERING;
+        case 2:
+            return ELECTRICAL_ENGINEERING;
+        case 3:
+            return CHEMICAL_ENGINEERING;
+        case 4:
+            return BIOTECHNOLOGY_AND_FOOD_ENGINEERING;
+        case 5:
+            return AEROSPACE_ENGINEERING;
+        case 6:
+            return INDUSTRIAL_ENGINEERING_AND_MANAGEMENT;
+        case 7:
+            return MATHEMATICS;
+        case 8:
+            return PHYSICS;
+        case 9:
+            return CHEMISTRY;
+        case 10:
+            return BIOLOGY;
+        case 11:
+            return ARCHITECTURE;
+        case 12:
+            return EDUCATION_IN_TECH_AND_SCIENCE;
+        case 13:
+            return COMPUTER_SCIENCE;
+        case 14:
+            return MEDICINE;
+        case 15:
+            return MATERIALS_ENGINEERING;
+        case 16:
+            return HUMANITIES_AND_ARTS;
+        case 17:
+            return BIOMEDICAL_ENGINEERING;
+        default:
+            return UNKNOWN;
     }
-    else if(strcmp(string, "MECHANICAL_ENGINEERING") == 0){
-        return MECHANICAL_ENGINEERING;
-    }
-    else if(strcmp(string, "ELECTRICAL_ENGINEERING") == 0){
-        return ELECTRICAL_ENGINEERING;
-    }
-    else if(strcmp(string, "CHEMICAL_ENGINEERING") == 0){
-        return CHEMICAL_ENGINEERING;
-    }
-    else if(strcmp(string, "BIOTECHNOLOGY_AND_FOOD_ENGINEERING") == 0){
-        return BIOTECHNOLOGY_AND_FOOD_ENGINEERING;
-    }
-    else if(strcmp(string, "AEROSPACE_ENGINEERING") == 0){
-        return AEROSPACE_ENGINEERING;
-    }
-    else if(strcmp(string, "INDUSTRIAL_ENGINEERING_AND_MANAGEMENT") == 0){
-        return INDUSTRIAL_ENGINEERING_AND_MANAGEMENT;
-    }
-    else if(strcmp(string, "MATHEMATICS") == 0){
-        return MATHEMATICS;
-    }
-    else if(strcmp(string, "PHYSICS") == 0){
-        return PHYSICS;
-    }
-    else if(strcmp(string, "CHEMISTRY") == 0){
-        return CHEMISTRY;
-    }
-    else if(strcmp(string, "BIOLOGY") == 0){
-        return BIOLOGY;
-    }
-    else if(strcmp(string, "ARCHITECTURE") == 0){
-        return ARCHITECTURE;
-    }
-    else if(strcmp(string, "EDUCATION_IN_TECH_AND_SCIENCE") == 0){
-        return EDUCATION_IN_TECH_AND_SCIENCE;
-    }
-    else if(strcmp(string, "COMPUTER_SCIENCE") == 0){
-        return COMPUTER_SCIENCE;
-    }
-    else if(strcmp(string, "MEDICINE") == 0){
-        return MEDICINE;
-    }
-    else if(strcmp(string, "MATERIALS_ENGINEERING") == 0){
-        return MATERIALS_ENGINEERING;
-    }
-    else if(strcmp(string, "HUMANITIES_AND_ARTS") == 0){
-        return HUMANITIES_AND_ARTS;
-    }
-    else if(strcmp(string, "BIOMEDICAL_ENGINEERING") == 0){
-        return BIOMEDICAL_ENGINEERING;
-    }
-    else
-        return UNKNOWN;
 }
 
 /**************************************************************/
@@ -289,6 +276,7 @@ static TechnionFaculty stringToFaculty(char *string)
 static MtmErrorCode  parseCompanyAdd(char **string, char **email, TechnionFaculty *faculty)
 {
     char *parameter;
+    int id;
     char delimiter[] = " \n\t";
     parameter = strtok(NULL, delimiter);
     *email = malloc(strlen(parameter) + 1);
@@ -296,8 +284,8 @@ static MtmErrorCode  parseCompanyAdd(char **string, char **email, TechnionFacult
         return MTM_OUT_OF_MEMORY;
     }
     strcpy(*email, parameter);
-    parameter = strtok(NULL, delimiter);
-    *faculty = stringToFaculty(parameter);
+    id = atoi (strtok(NULL, delimiter) );
+    *faculty = stringToFaculty(id);
 
     return MTM_SUCCESS;
 }
@@ -352,10 +340,11 @@ static MtmErrorCode parseRoomAdd(char **string, char **email, int *roomId, int *
 /**************************************************************/
 static MtmErrorCode parseRoomRemove(char **string, TechnionFaculty *faculty, int *roomId)
 {
-    char *parameter;
+
+    int id;
     char delimiter[] = " \n\t";
-    parameter = strtok(NULL, delimiter);
-    *faculty = stringToFaculty(parameter);
+    id = atoi ( strtok(NULL, delimiter) );
+    *faculty = stringToFaculty(id);
     *roomId = atoi( strtok(NULL, delimiter) );
 
     return MTM_SUCCESS;
@@ -375,7 +364,7 @@ static MtmErrorCode parseEscaperAdd(char **email, TechnionFaculty *faculty, int 
         return MTM_OUT_OF_MEMORY;
     }
     strcpy(*email, parameter);
-    *faculty = stringToFaculty( strtok(NULL, delimiter) );
+    *faculty = stringToFaculty( atoi (strtok(NULL, delimiter) ) );
     *skill = atoi( strtok(NULL, delimiter) );
 
     return MTM_SUCCESS;
@@ -414,7 +403,7 @@ static MtmErrorCode parseEscaperOrder(char **escaperEmail, TechnionFaculty *facu
         return MTM_OUT_OF_MEMORY;
     }
     strcpy(*escaperEmail, parameter);
-    *faculty = stringToFaculty( strtok(NULL, delimiter) );
+    *faculty = stringToFaculty( atoi (strtok(NULL, delimiter)) );
     *roomId = atoi( strtok(NULL, delimiter) );
     *requestedTime = atoi( strtok(NULL, delimiter) );
     *requestedDay = atoi( strtok(NULL, delimiter) );
@@ -458,12 +447,16 @@ int main(int argc, char *argv[])
     int c;
     bool iflag = false, oflag = false;
     FILE *inputStream, *outputStream;
+    extern char *optarg;
+    char *string;
 
-    while( (c = getopt(argc, argv, "io") != -1 )) {
+    while((c = getopt(argc, argv, ":i:o:")) != -1) {
+
         switch (c) {
             case 'i':
                 iflag = true;
-                inputStream = fopen(optarg, "r");
+                string = optarg;
+                inputStream = fopen(string, "r");
                 if (inputStream == NULL) {
                     mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
                     return 0;
@@ -471,12 +464,16 @@ int main(int argc, char *argv[])
                 break;
             case 'o':
                 oflag = true;
-                outputStream = fopen(optarg, "w");
+                string = optarg;
+                outputStream = fopen(string, "w+");
                 if (outputStream == NULL) {
                     mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
                     return 0;
                 }
                 break;
+            case '?':
+                mtmPrintErrorMessage(stdout, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                return 0;
             default:
                 abort();
                 break;
@@ -497,7 +494,6 @@ int main(int argc, char *argv[])
     }
 
     parser(inputStream, outputStream, escapeTechnion);
-
 
     fileClose(inputStream, outputStream, iflag, oflag);
 

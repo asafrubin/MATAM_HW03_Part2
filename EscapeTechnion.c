@@ -523,7 +523,7 @@ MtmErrorCode mtmRoomAdd(char *email, int id, int price,int numOfPpl,int openHour
         return MTM_ID_ALREADY_EXIST;
     }
 
-    companyResult = addCompanyRoom(email, id, price, numOfPpl, openHour, closeHour, difficulty, company );
+    companyResult = addCompanyRoom( email, id, price, numOfPpl, openHour, closeHour, difficulty, company );
     if(companyResult != COMPANY_SUCCESS){
         return translateCompanyResultToMtm(companyResult);
     }
