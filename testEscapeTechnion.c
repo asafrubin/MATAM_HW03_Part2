@@ -167,7 +167,7 @@ static bool testMtmEscaperRemove()
 {
     EscapeTechnion escapeTechnion = NULL;
     FILE *outputStream = stdout;
-    char *goodCompanyEmail1 = "asaf@gmail", *badCompanyEmail2 = "asaf2@gmail";
+    char *goodCompanyEmail1 = "asaf@gmail", *notExistCompanyEmail = "asaf2@gmail";
     TechnionFaculty escaperFaculty = COMPUTER_SCIENCE;
     MtmErrorCode mtmErrorCode;
     int goodSkill = 5;
@@ -181,7 +181,9 @@ static bool testMtmEscaperRemove()
     //escaper remove with good parameters
     mtmErrorCode = mtmEscaperRemove(goodCompanyEmail1, escapeTechnion);
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperRemove(badCompanyEmail2, escapeTechnion);
+
+    //escaper remove with email that does not exist
+    mtmErrorCode = mtmEscaperRemove(notExistCompanyEmail, escapeTechnion);
     ASSERT_TEST(mtmErrorCode == MTM_CLIENT_EMAIL_DOES_NOT_EXIST);
 
 
