@@ -19,8 +19,6 @@ typedef enum {
 Room createRoom(char *email, int id, int price, int num_ppl, int time_start, int time_finish, int difficulty
         ,roomResult *result);
 
-
-
 void removeRoom(Room roomToRemove);
 
 Room copyRoom(Room roomToCopy);
