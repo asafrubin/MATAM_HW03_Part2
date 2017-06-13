@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+
 static SetElement setCopyOfRoom(SetElement roomToCopy);
 static void setRemoveRoom(SetElement room);
 static int setCompareRoom(SetElement firstRoom, SetElement secondRoom);

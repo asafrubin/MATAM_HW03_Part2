@@ -20,6 +20,9 @@ struct SOrders{
 
 static orderResult checkEmail(char *name)
 {
+    if(name == NULL){
+        return ORDER_INVALID_PARAMETER;
+    }
     int counter = 0;
     int i = 0;
     while( name[i] != '\0' ){
