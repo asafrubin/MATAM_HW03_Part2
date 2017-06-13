@@ -84,6 +84,7 @@ roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
 
 Room copyRoom(Room roomToCopy)
 {
+    assert(roomToCopy != NULL);
     Room copyOfRoom = NULL;
     roomResult result;
 
@@ -148,6 +149,7 @@ int getRoomNumOfPpl(Room room)
 
 double getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
 {
+    assert(room != NULL);
     return ( pow( (room->num_of_ppl - P_e), 2) + pow( (room->difficulty - skill_level), 2) );
 }
 
