@@ -3,19 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "list.h"
 
-#define DISCOUNT 0.25
+#define DISCOUNT 0.75
 
 struct SOrders{
     char *escaperEmail;
-    //char *facultyEmail;
-    TechnionFaculty faculty;
+    TechnionFaculty companyFaculty;
+    TechnionFaculty escaperFaculty;
     int roomID;
     int req_num_of_ppl;
-    //int effective_ppl;
     int req_hour;
     int req_day;
-    //double price;
+    int price;
 };
 
 static orderResult checkEmail(char *name)
@@ -41,33 +41,24 @@ static orderResult checkEmail(char *name)
  * @param roomPrice : standard price of the room ordered
  * @return : the price to charged from the client
  */
-
-/*
-static double calculatePrice(bool discount , double roomPrice)
+static int calculatePrice(bool discount , int roomPrice)
 {
-    double price = roomPrice;
     if(discount){
-        price = (1 - DISCOUNT) * price;
+        roomPrice = (DISCOUNT * roomPrice); //roomPrice will always be multiplies of 4
     }
-    return price;
+    return roomPrice;
 }
-*/
 
-Order createOrder(char *escaperEmail, TechnionFaculty faculty, int roomID , int req_num_of_ppl ,
-                        int req_hour , int req_day, int system_day, orderResult *result)
+Order createOrder(char *escaperEmail,TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty, int roomID,
+                  int req_num_of_ppl, int req_hour, int req_day, int system_day, int roomPrice, orderResult *result)
 {
     Order newOrder;
+    bool discount;
 
-    if(req_num_of_ppl < 0){
+    if(req_num_of_ppl < 0 || roomPrice < 0 || req_day < 0 || req_hour < 0 || req_hour > 23){
         *result = ORDER_INVALID_PARAMETER;
     }
-    if(req_hour < 0 || req_hour > 23){
-        *result = ORDER_INVALID_PARAMETER;
-    }
-    if( req_day < 0){
-        *result =  ORDER_INVALID_PARAMETER;
-    }
-    if( checkEmail(escaperEmail) != ORDER_SUCCESS){
+    if( checkEmail(escaperEmail) != ORDER_SUCCESS ){
         *result =  ORDER_INVALID_PARAMETER;
     }
 
@@ -83,22 +74,19 @@ Order createOrder(char *escaperEmail, TechnionFaculty faculty, int roomID , int 
         return NULL;
     }
     strcpy(newOrder->escaperEmail , escaperEmail);
-    /*
-    newOrder->facultyEmail = malloc(strlen(facultyEmail) + 1);
-    if(newOrder->facultyEmail == NULL){
-        free(newOrder->escaperEmail);
-        free(newOrder);
-        *result = ORDER_OUT_OF_MEMORY;
-        return NULL;
-    }
-     */
-    newOrder->faculty = faculty;
+
+
+    //set discount to true if escaper gets a discount
+    discount = (escaperFaculty == companyFaculty);
+
+    newOrder->escaperFaculty = escaperFaculty;
+    newOrder->companyFaculty = companyFaculty;
     newOrder->roomID = roomID;
     newOrder->req_num_of_ppl = req_num_of_ppl;
     //newOrder->effective_ppl = effective_ppl;
     newOrder->req_hour = req_hour;
-    newOrder->req_day = req_day - systemDay;
-    //newOrder->price = calculatePrice(discount , roomPrice);
+    newOrder->req_day = req_day;
+    newOrder->price = calculatePrice(discount , roomPrice);
 
     *result = ORDER_SUCCESS;
 
@@ -112,7 +100,7 @@ Order createOrder(char *escaperEmail, TechnionFaculty faculty, int roomID , int 
  */
 Order copyOrder(Order order_to_copy)
 {
-    Order copy_of_order = malloc(sizeof(Order));
+    Order copy_of_order = malloc(sizeof(*copy_of_order));
     if(copy_of_order == NULL){
         return NULL;
     }
@@ -122,22 +110,30 @@ Order copyOrder(Order order_to_copy)
         return NULL;
     }
     strcpy(copy_of_order->escaperEmail , order_to_copy->escaperEmail);
+
     /*
-    copy_of_order->facultyEmail = malloc(strlen(order_to_copy->facultyEmail) + 1);
-    if(copy_of_order->facultyEmail == NULL){
+    copy_of_order->companyEmail = malloc(strlen(order_to_copy->companyEmail) + 1);
+    if(copy_of_order->companyEmail == NULL){
         free(copy_of_order->escaperEmail);
         free(copy_of_order);
         return NULL;
     }
-    strcpy(copy_of_order->facultyEmail , order_to_copy->facultyEmail);
-     */
+    strcpy(copy_of_order->companyEmail , order_to_copy->companyEmail);
+    */
     copy_of_order->roomID = order_to_copy->roomID;
     copy_of_order->req_num_of_ppl = order_to_copy->req_num_of_ppl;
-    //copy_of_order->effective_ppl = order_to_copy->effective_ppl;
     copy_of_order->req_hour = order_to_copy->req_hour;
     copy_of_order->req_day = order_to_copy->req_day;
-    //copy_of_order->price = order_to_copy->price;
+    copy_of_order->price = order_to_copy->price;
+    copy_of_order->companyFaculty = order_to_copy->companyFaculty;
+    copy_of_order->escaperFaculty = order_to_copy->escaperFaculty;
+
     return copy_of_order;
+}
+
+ListElement listCopyOrder(ListElement order_to_copy)
+{
+    return copyOrder( order_to_copy );
 }
 
 /**
@@ -145,12 +141,17 @@ Order copyOrder(Order order_to_copy)
  * @param order : pointer to the Order to be removed
  * @return : Error Enum
  */
-orderResult freeOrder(Order order)
+void freeOrder(Order order)
 {
-    //free(order->facultyEmail);
-    free(order->escaperEmail);
-    free(order);
-    return ORDER_SUCCESS;
+    if(order) {
+        free(order->escaperEmail);
+        free(order);
+    }
+}
+
+void listFreeOrder(ListElement order)
+{
+    freeOrder(order);
 }
 
 /**
@@ -158,13 +159,11 @@ orderResult freeOrder(Order order)
  * @param order : pointer to order inquired
  * @return : price of order inquired
  */
-
-/*
-double getOrderPrice(Order order)
+int getOrderPrice(Order order)
 {
+    assert(order != NULL);
     return order->price;
 }
-*/
 
 int getOrderDay(Order order)
 {
@@ -210,13 +209,67 @@ char *getOrderEmail(Order order)
     return email;
 }
 
-//need fix it
-TechnionFaculty getOrderFaculty(Order order)
+TechnionFaculty getOrderRoomFaculty(Order order)
 {
-    return order->faculty;
+    assert(order != NULL);
+    return order->companyFaculty;
 }
 
 void increaseOrderDay(Order order)
 {
     order->req_day--;
+}
+
+bool orderDayArrived(ListElement order, ListFilterKey key)
+{
+    Order checkOrder = order;
+
+    if(checkOrder->req_day < *(int*)(key) ){
+        return true;
+    }
+
+    return false;
+}
+
+bool orderDayNotArrived(ListElement order, ListFilterKey key)
+{
+    Order checkOrder = order;
+
+    if(checkOrder->req_day >= *(int*)(key) ){
+        return true;
+    }
+
+    return false;
+}
+
+List createOrderDayNotArrivedFilteredList(List ListOfOrders)
+{
+    int key = 0;
+    return listFilter(ListOfOrders, orderDayNotArrived, &key);
+}
+
+List createOrderDayArrivedFilteredList(List ListOfOrders)
+{
+    int key = 0;
+    return listFilter(ListOfOrders, orderDayArrived, &key);
+}
+
+int hourOfDay(ListElement order1, ListElement order2)
+{
+
+    Order firstOrder = order1, secondOrder = order2;
+
+    return secondOrder->req_hour - firstOrder->req_hour;
+}
+
+void sortOrdersByHour(List orders)
+{
+    listSort(orders, hourOfDay);
+}
+
+void printOrder(FILE *outputStream, Order order, int escaperSkill, int roomDifficulty, char *companyEmail)
+{
+    mtmPrintOrder(outputStream, order->escaperEmail, escaperSkill ,order->escaperFaculty, companyEmail,
+                  order->companyFaculty, order->roomID, order->req_hour, roomDifficulty,
+                  order->req_num_of_ppl, order->price);
 }

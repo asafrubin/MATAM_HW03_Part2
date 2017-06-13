@@ -18,12 +18,12 @@ cmdEscaper, cmdEscaperAdd, cmdEscaperRemove, cmdEscaperOrder, cmdEscaperRecommen
 cmdReport, cmdReportDay, cmdReportBest, cmdInvalidCommand}MtmCommand;
 
 /**************************************************************/
-/*  The Functions decleration  block                          */
+/*  Start Functions decleration  block                        */
 /**************************************************************/
 static TechnionFaculty stringToFaculty(char *string);
 static MtmErrorCode parseEscaperRecommend(char **escperEmail, int *roomNumOfPpl);
 static MtmErrorCode parseEscaperOrder(char **escaperEmail, TechnionFaculty *faculty, int *roomId,
-                                      int *requestedTime, int *roomNumOfPpl );
+                                      int *requestedTime, int *requestedDay, int *roomNumOfPpl );
 static MtmErrorCode parseEscaperRemove(char **email);
 static MtmErrorCode parseEscaperAdd(char **email, TechnionFaculty *faculty, int *skill);
 static MtmErrorCode parseRoomRemove(char **string, TechnionFaculty *faculty, int *roomId);
@@ -39,7 +39,21 @@ static MtmCommand subCommandRoomToEnum(MtmCommand command, char *subCommand);
 static MtmCommand subCommandEscaperToEnum(MtmCommand command, char *subCommand);
 static MtmCommand subCommandReportToEnum(MtmCommand command, char *subCommand);
 
+/**************************************************************/
+/*  End Functions decleration  block                          */
+/**************************************************************/
 
+
+/**
+ * parser function - parsing the input stream into commands and sub-commands
+ * then calling the correct function from EscapeTechnion ADT
+ *
+ * @param inputStream - stdin or some input file
+ * @param outputStream - stdout or some output file
+ * @param escapeTechnion  - a constructed escapeTechnion ADT to work on
+ * @return MTM_OUT_OF_MEMORY - in case something have failed during the proccess
+ *         MTM_SUCCESS - in case EOF recived
+ */
 MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion escapeTechnion)
 {
     char string[MAX_LEN] = { 0 };
@@ -137,18 +151,19 @@ static MtmErrorCode handleFullCommand(MtmCommand command, char *string, FILE *ou
     char *email;
     TechnionFaculty faculty;
     MtmErrorCode result;
-    int roomId, roomPrice, roomNumOfPpl, roomOpenHour, roomCloseHour, roomDifficulty, skill, requestedTime;
+    int roomId, roomPrice, roomNumOfPpl, roomOpenHour, roomCloseHour,
+            roomDifficulty, skill, requestedTime, requestedDay;
 
     switch(command) {
         case cmdCompanyAdd:
             parseCompanyAdd(&string, &email, &faculty);
-            result = mtmCompanyAdd(email, faculty, &escapeTechnion);
+            result = mtmCompanyAdd(email, faculty, escapeTechnion);
             free(email);
             return result;
             break;
         case cmdCompanyRemove:
             parseCompanyRemove(&string, &email);
-            result = mtmCompanyRemove(email, &escapeTechnion);
+            result = mtmCompanyRemove(email, escapeTechnion);
             free(email);
             return result;
             break;
@@ -156,45 +171,45 @@ static MtmErrorCode handleFullCommand(MtmCommand command, char *string, FILE *ou
             parseRoomAdd(&string, &email, &roomId, &roomPrice, &roomNumOfPpl, &roomOpenHour,
                          &roomCloseHour, &roomDifficulty);
             result = mtmRoomAdd(email, roomId, roomPrice, roomNumOfPpl, roomOpenHour,roomCloseHour,
-                       roomDifficulty, &escapeTechnion);
+                       roomDifficulty, escapeTechnion);
             free(email);
             return result;
             break;
         case cmdRoomRemove:
             parseRoomRemove(&string, &faculty, &roomId);
-            result = mtmRoomRemove(faculty, roomId, &escapeTechnion);
+            result = mtmRoomRemove(faculty, roomId, escapeTechnion);
             return result;
             break;
         case cmdEscaperAdd:
             parseEscaperAdd(&email, &faculty, &skill );
-            result = mtmEscaperAdd(email, faculty, skill, &escapeTechnion);
+            result = mtmEscaperAdd(email, faculty, skill, escapeTechnion);
             free(email);
             return result;
             break;
         case cmdEscaperRemove:
             parseEscaperRemove(&email);
-            result = mtmEscaperRemove(email, &escapeTechnion);
+            result = mtmEscaperRemove(email, escapeTechnion);
             free(email);
             return result;
             break;
         case cmdEscaperOrder:
-            parseEscaperOrder(&email, &faculty, &roomId, &requestedTime, &roomNumOfPpl );
-            result = mtmEscaperOrder(email, faculty, roomId, requestedTime, roomNumOfPpl, &escapeTechnion);
+            parseEscaperOrder(&email, &faculty, &roomId, &requestedTime, &requestedDay, &roomNumOfPpl );
+            result = mtmEscaperOrder(email, faculty, roomId, requestedTime, requestedDay, roomNumOfPpl, escapeTechnion);
             free(email);
             return result;
             break;
         case cmdEscaperRecommend:
             parseEscaperRecommend(&email, &roomNumOfPpl);
-            result = mtmEscaperRecommend(email, roomNumOfPpl, &escapeTechnion);
+            result = mtmEscaperRecommend(email, roomNumOfPpl, escapeTechnion);
             free(email);
             return result;
             break;
         case cmdReportDay:
-            result = mtmReportDay(&escapeTechnion);
+            result = mtmReportDay(escapeTechnion);
             return result;
             break;
         case cmdReportBest:
-            result = mtmReportBest(&escapeTechnion);
+            result = mtmReportBest(escapeTechnion);
             return result;
             break;
         case cmdInvalidCommand:
@@ -389,10 +404,10 @@ static MtmErrorCode parseEscaperRemove(char **email)
 /* parameters to parse : <email>  <faculty>  <room id>  <Requested time>  <Number of People>    */
 /************************************************************************************************/
 static MtmErrorCode parseEscaperOrder(char **escaperEmail, TechnionFaculty *faculty, int *roomId,
-                                      int *requestedTime, int *roomNumOfPpl )
+                                      int *requestedTime, int *requestedDay, int *roomNumOfPpl )
 {
     char *parameter;
-    char delimiter[] = " \n\t";
+    char delimiter[] = " \n\t-";
     parameter = strtok(NULL, delimiter);
     *escaperEmail = malloc(strlen(parameter) + 1);
     if(*escaperEmail == NULL){
@@ -402,6 +417,7 @@ static MtmErrorCode parseEscaperOrder(char **escaperEmail, TechnionFaculty *facu
     *faculty = stringToFaculty( strtok(NULL, delimiter) );
     *roomId = atoi( strtok(NULL, delimiter) );
     *requestedTime = atoi( strtok(NULL, delimiter) );
+    *requestedDay = atoi( strtok(NULL, delimiter) );
     *roomNumOfPpl = atoi( strtok(NULL, delimiter) );
 
     return MTM_SUCCESS;
@@ -427,7 +443,7 @@ static MtmErrorCode parseEscaperRecommend(char **escperEmail, int *roomNumOfPpl)
     return MTM_SUCCESS;
 }
 
-static void fileClose(FILE *inputStream, FILE *outputstream, bool iflag, bool oflag)
+void static fileClose(FILE *inputStream, FILE *outputstream, bool iflag, bool oflag)
 {
     if(iflag == true){
         fclose(inputStream);
@@ -473,19 +489,16 @@ int main(int argc, char *argv[])
         outputStream = stdout;
     }
     EscapeTechnion escapeTechnion = NULL;
-    escapeTechnion = malloc( sizeof(*escapeTechnion) );
+    escapeTechnion = mtmCreateEscapeTechnion(outputStream);
     if(escapeTechnion == NULL){
         fileClose(inputStream, outputStream, iflag, oflag);
         mtmPrintErrorMessage(outputStream, MTM_OUT_OF_MEMORY);
         return 0;
     }
-    if( mtmInitEscapeTechnion(&escapeTechnion, outputStream) == MTM_OUT_OF_MEMORY ){
-        fileClose(inputStream, outputStream, iflag, oflag);
-        free(escapeTechnion);
-        return 0;
-    }
 
     parser(inputStream, outputStream, escapeTechnion);
+
+
     fileClose(inputStream, outputStream, iflag, oflag);
 
     return 0;

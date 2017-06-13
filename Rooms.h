@@ -27,6 +27,15 @@ Room copyRoom(Room roomToCopy);
 
 int getRoomId(Room room);
 
+int getRoomPrice(Room room);
+
+int getRoomNumOfPpl(Room room);
+
+int getRoomDifficulty(Room room);
+
+roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
+                               int time_start, int time_finish, int difficulty);
+
 double getRoomRecommendedCalculation(Room room, int P_e, int skill_level);
 
 roomResult checkAvailable();

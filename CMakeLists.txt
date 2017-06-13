@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.7)
 project(HW03_Part2)
 
 set(CMAKE_C_STANDARD 99)
-SET(GCC_COVERAGE_COMPILE_FLAGS "-Wall -pedantic-errors -Werror -DNDEBUG")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-Wall -pedantic-errors -Werror")
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 
 #Whole Program
-#set(SOURCE_FILES list.h mtm_ex3.h set.h testEscapeTechnion.c EscapeTechnion.c EscapeTechnion.h Rooms.c Rooms.h Orders.c Orders.h Escapers.c Escapers.h Companies.c Companies.h)
+#set(SOURCE_FILES parser.c list.h mtm_ex3.h set.h EscapeTechnion.c EscapeTechnion.h Rooms.c Rooms.h Orders.c Orders.h Escapers.c Escapers.h Companies.c Companies.h)
 
 #test Rooms
 #set(SOURCE_FILES test_utilities.h testRoom.c  mtm_ex3.h Rooms.c Rooms.h)
