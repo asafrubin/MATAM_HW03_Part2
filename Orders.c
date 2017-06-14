@@ -44,8 +44,9 @@ static orderResult checkEmail(char *name)
  * @param roomPrice : standard price of the room ordered
  * @return : the price to charged from the client
  */
-static int calculatePrice(bool discount , int roomPrice)
+static int calculatePrice(bool discount ,int roomPrice, int req_num_of_ppl)
 {
+    roomPrice *= req_num_of_ppl;
     if(discount){
         roomPrice = (DISCOUNT * roomPrice); //roomPrice will always be multiplies of 4
     }
@@ -90,7 +91,7 @@ Order createOrder(char *escaperEmail, TechnionFaculty escaperFaculty, TechnionFa
     newOrder->req_num_of_ppl = req_num_of_ppl;
     newOrder->req_hour = req_hour;
     newOrder->req_day = req_day;
-    newOrder->price = calculatePrice(discount , roomPrice);
+    newOrder->price = calculatePrice(discount , roomPrice, req_num_of_ppl);
 
     *result = ORDER_SUCCESS;
 
@@ -261,9 +262,17 @@ List createOrderDayArrivedFilteredList(List ListOfOrders)
 int hourOfDay(ListElement order1, ListElement order2)
 {
 
+    int result;
     Order firstOrder = order1, secondOrder = order2;
 
-    return secondOrder->req_hour - firstOrder->req_hour;
+    result =  (firstOrder->req_hour - secondOrder->req_hour);
+    if(result == 0){
+        result = (firstOrder->companyFaculty - secondOrder->companyFaculty);
+        if(result == 0){
+            return (firstOrder->roomID - secondOrder->roomID);
+        }
+    }
+    return result;
 }
 
 void sortOrdersByHour(List orders)

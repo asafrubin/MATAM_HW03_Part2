@@ -815,6 +815,9 @@ MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnio
             getCompanyFaculty(company, &companyFaculty);
             roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
         }
+        if(tempCalculation == calculation){
+            mtmGetEscaperFacultyByEmail(escapeTechnion->escapers, escaperEmail, &escaperFaculty);
+        }
     }
 
     for(int day=0; day < MAX_DAYS; day++){
@@ -855,7 +858,6 @@ MtmErrorCode mtmReportDay(EscapeTechnion escapeTechnion)
 
     //need to add a secondary sort also third
     sortOrdersByHour(orders_arrived);
-
 
     mtmPrintDayHeader(escapeTechnion->outputStream, escapeTechnion->day, listGetSize(orders_arrived));
     LIST_FOREACH(Order, order, orders_arrived){
