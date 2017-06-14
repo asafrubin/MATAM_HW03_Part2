@@ -258,6 +258,39 @@ static Company mtmGetCompanyByEmail(char *email, EscapeTechnion escapeTechnion, 
     return NULL;
 }
 
+static int calculateFacultyDistanceFromClient(TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty,
+                                              TechnionFaculty tempCompanyFaculty, int tempId, int id,
+                                              CompanyResult *companyResult){
+    int distance1, distance2;
+
+    distance1 = abs(companyFaculty - escaperFaculty);
+    distance2 = abs(tempCompanyFaculty - escaperFaculty);
+
+    if ((distance1 - distance2) == 0) {
+        if (companyFaculty == tempCompanyFaculty) {
+            *companyResult = COMPANY_CALC_BY_ID;
+            if(tempId < id){
+                return tempId;
+            }
+            else
+                return id;
+        }
+        if(companyFaculty < tempCompanyFaculty){
+            *companyResult = COMPANY_CALC_BY_FACULTY;
+            return companyFaculty;
+        }
+        else
+            *companyResult = COMPANY_CALC_BY_FACULTY;
+            return tempCompanyFaculty;
+    }
+    else if(distance1 < distance2 ){
+        *companyResult = COMPANY_CALC_BY_FACULTY;
+        return companyFaculty;
+    }
+    else
+        *companyResult = COMPANY_CALC_BY_FACULTY;
+        return tempCompanyFaculty;
+}
 static MtmErrorCode mtmCheckIfCompanyEmailExists(EscapeTechnion escapeTechnion, char *email)
 {
     char *companyEmail = NULL;
@@ -768,10 +801,11 @@ MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty companyFaculty,
 MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnion escapeTechnion)
 {
 
-    int recommendedRoomId, tempRecommendedRoomId, skill_level, roomPrice, set_size=0;
+    int recommendedRoomId, tempRecommendedRoomId, skill_level, roomPrice, set_size=0, calcResult ;
     double calculation=DBL_MAX, tempCalculation = DBL_MAX;
-    TechnionFaculty companyFaculty, escaperFaculty;
+    TechnionFaculty companyFaculty, tempCompanyFaculty, escaperFaculty;
     orderResult orderResult;
+    CompanyResult companyResult;
     MtmErrorCode mtmErrorCode;
     ListResult listResult;
     Order new_order;
@@ -809,14 +843,32 @@ MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnio
 
     SET_FOREACH(Company, company, escapeTechnion->companies){
         tempRecommendedRoomId = getCompanyRecommendedRoomId(company, numOfPpl, skill_level, &tempCalculation);
+        getCompanyFaculty(company, &tempCompanyFaculty);
         if(tempCalculation < calculation){
             calculation = tempCalculation;
             recommendedRoomId = tempRecommendedRoomId;
-            getCompanyFaculty(company, &companyFaculty);
+            companyFaculty = tempCompanyFaculty;
             roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
         }
-        if(tempCalculation == calculation){
+        else if(tempCalculation == calculation){
             mtmGetEscaperFacultyByEmail(escapeTechnion->escapers, escaperEmail, &escaperFaculty);
+            calcResult = calculateFacultyDistanceFromClient(escaperFaculty, companyFaculty, tempCompanyFaculty,
+                                                                tempRecommendedRoomId,recommendedRoomId,&companyResult);
+            if(companyResult == COMPANY_CALC_BY_FACULTY){
+                companyFaculty = (TechnionFaculty)calcResult;
+                if(companyFaculty == tempCompanyFaculty){
+                    recommendedRoomId = tempRecommendedRoomId;
+                    roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
+                }
+            }
+            else {
+                recommendedRoomId = calcResult;
+                if(recommendedRoomId == tempRecommendedRoomId){
+                    companyFaculty = tempCompanyFaculty;
+                    roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
+                }
+            }
+
         }
     }
 

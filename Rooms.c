@@ -137,9 +137,7 @@ roomResult static checkEmail(char *name)
 
 int getRoomId(Room room)
 {
-    if(room == NULL){
-        return -1;
-    }
+   assert(room != NULL);
 
     return room->id;
 }

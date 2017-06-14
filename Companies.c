@@ -331,6 +331,7 @@ int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, doubl
         }
     }
 
+
     return getRoomId(best_room);
 }
 
