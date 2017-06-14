@@ -63,7 +63,6 @@ CompanyResult checkIfRoomExists(Company company , int id )
     return COMPANY_ROOM_ID_DOES_NOT_EXIST;
 }
 
-
 /**
  * Adds a new room to a Companies Set
  * @param company : the company to which to add the room
@@ -394,8 +393,6 @@ int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, int *
     return best_room;
 }
 
-
-
 int getCompanyRoomListSize(Company company)
 {
     if(company == NULL){
@@ -421,17 +418,6 @@ int getCompanyRoomDifficultyById(Company company, int roomId)
     SET_FOREACH(Room, room, company->rooms){
         if( getRoomId(room) == roomId){
             return getRoomDifficulty(room);
-        }
-    }
-
-    return -1;
-}
-
-int getCompanyRoomNumOfPplById(Company company, int roomId)
-{
-    SET_FOREACH(Room, room, company->rooms){
-        if( getRoomNumOfPpl(room) == roomId){
-            return getRoomPrice(room);
         }
     }
 

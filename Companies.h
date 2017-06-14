@@ -25,8 +25,6 @@ int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, int *
 
 int getCompanyRoomPriceById(Company company, int roomId);
 
-int getCompanyRoomNumOfPplById(Company company, int roomId);
-
 int getCompanyRoomDifficultyById(Company company, int roomId);
 
 CompanyResult checkIfRoomExists(Company company , int id );
@@ -62,12 +60,5 @@ CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num
 CompanyResult companyRoomRemove(Company company, int roomId);
 
 CompanyResult checkIfCompanyRoomIsOpenById(Company company, int roomId, int req_hour);
-
-//void setRemoveRoom(SetElement room);
-
-//SetElement setCopyOfRoom(SetElement roomToCopy);
-
-//int setCompareRoom(SetElement firstRoom, SetElement secondRoom);
-
 
 #endif //HW03_PART2_COMPANIES_H
