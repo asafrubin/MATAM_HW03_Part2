@@ -60,28 +60,6 @@ static CompanyResult translateSetResult(int setResult)
 }
 
 /**
- * Checks if email is valid according to specific rules
- * @param name : email
- * @return : roomResult (ENUM)
- */
-CompanyResult static checkEmail(char *name)
-{
-    int counter = 0;
-    int i = 0;
-    while( name[i] != '\0' ){
-        if( name[i] == '@' ){
-            counter++;
-        }
-        i++;
-    }
-    if(counter == 0 || counter > 1){
-        return COMPANY_INVALID_PARAMETER;
-    }
-
-    return COMPANY_SUCCESS;
-}
-
-/**
  * Checks if a room exists within a company by it's id
  * @param company : company struct
  * @param id : room to check
@@ -192,10 +170,11 @@ Company copyCompany(Company company)
     Company newCompany = NULL;
     CompanyResult companyResult;
 
-    newCompany = createCompany(company->email , company->faculty , &companyResult);
+    newCompany = createCompany(company->email, company->faculty, &companyResult);
     if(newCompany == NULL){
         return NULL;
     }
+    setDestroy(newCompany->rooms);
     newCompany->rooms = setCopy(company->rooms);
     if(newCompany->rooms == NULL){
         free(newCompany);
@@ -234,14 +213,6 @@ Company createCompany(char *email, TechnionFaculty faculty, CompanyResult *resul
         *result = COMPANY_INVALID_PARAMETER;
         return NULL;
     }
-    *result = checkEmail(email);
-    if(*result != COMPANY_SUCCESS){
-        return NULL;
-    }
-    if(faculty > 18 || faculty < 0){
-        *result = COMPANY_INVALID_PARAMETER;
-        return NULL;
-    }
 
     newCompany = malloc( sizeof(*newCompany) );
     if(newCompany == NULL){
@@ -269,18 +240,11 @@ Company createCompany(char *email, TechnionFaculty faculty, CompanyResult *resul
     return newCompany;
 }
 
-/**
- * Adds a new room to an existing company
- * @param companyEmail : company email of targeted company
- * @param roomId : unique id of new room
- * @param roomPrice : price of new room
- * @param num_ppl : number of people recommend for room
- * @param open_time : time room opens
- * @param close_time : time room closes
- * @param difficulty : difficulty of room
- * @param company : struct of company
- * @return : roomResult (ENUM)
- */
+static void setRemoveRoom(SetElement room)
+{
+    removeRoom( (Room)room );
+}
+
 CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num_ppl,int open_time,
                              int close_time, int difficulty, Company company)
 {
@@ -303,6 +267,7 @@ CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num
         removeRoom(newRoom);
         return translateSetResult(setResult);
     }
+    removeRoom(newRoom);
 
     return COMPANY_SUCCESS;
 }
@@ -334,12 +299,7 @@ CompanyResult mtmCheckCompanyRoomParameters(char *companyEmail, int roomId, int 
     return COMPANY_SUCCESS;
 }
 
-/**
- * Removes a room from a company by room id
- * @param company : company from which to remove
- * @param roomId : unique id of room to remove
- * @return : roomResult (ENUM)
- */
+/*
 CompanyResult removeCompanyRoom(Company company, int roomId)
 {
     SET_FOREACH(Room, room, company->rooms){
@@ -351,6 +311,7 @@ CompanyResult removeCompanyRoom(Company company, int roomId)
 
     return COMPANY_ROOM_ID_DOES_NOT_EXIST;
 }
+ */
 
 /**
  * Checks if room is open during requested hour
@@ -436,7 +397,6 @@ char *getCompanyEmail(Company company, CompanyResult *result)
 {
     char *email;
     assert(company != NULL);
-    char *email;
 
     email = malloc( strlen(company->email) + 1 );
     if(email == NULL){
@@ -467,6 +427,41 @@ CompanyResult getCompanyFaculty(Company company, TechnionFaculty *faculty)
     return COMPANY_SUCCESS;
 }
 
+static int calculateFacultyDistanceFromClient(TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty,
+                                              TechnionFaculty tempCompanyFaculty, int tempId, int id,
+                                              CompanyResult *companyResult)
+{
+    int distance1, distance2;
+
+    distance1 = abs(companyFaculty - escaperFaculty);
+    distance2 = abs(tempCompanyFaculty - escaperFaculty);
+
+    if ((distance1 - distance2) == 0) {
+        if (companyFaculty == tempCompanyFaculty) {
+            *companyResult = COMPANY_CALC_BY_ID;
+            if(tempId < id){
+                return tempId;
+            }
+            else
+                return id;
+        }
+        if(companyFaculty < tempCompanyFaculty){
+            *companyResult = COMPANY_CALC_BY_FACULTY;
+            return companyFaculty;
+        }
+        else
+            *companyResult = COMPANY_CALC_BY_FACULTY;
+        return tempCompanyFaculty;
+    }
+    else if(distance1 < distance2 ){
+        *companyResult = COMPANY_CALC_BY_FACULTY;
+        return companyFaculty;
+    }
+    else
+        *companyResult = COMPANY_CALC_BY_FACULTY;
+    return tempCompanyFaculty;
+}
+
 /**
  * Retrieves room most recommend ID
  * @param company : company withing which to inquire
@@ -475,21 +470,40 @@ CompanyResult getCompanyFaculty(Company company, TechnionFaculty *faculty)
  * @param best_calculation : pointer which holds the calculation
  * @return : recommended room id
  */
-int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, double *best_calculation)
+int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, int *best_calculation,
+                                TechnionFaculty escaperFaculty, TechnionFaculty *companyFaculty,
+                                TechnionFaculty *tempCompanyFaculty, int *roomId, int *roomPrice)
 {
-    double temp_calculation=0;
-    Room best_room = NULL;
+    int temp_calculation = 0, best_room = 0, tempId=0, calcResult=0;
+    CompanyResult companyResult;
 
-    SET_FOREACH(Room, room, company->rooms){
+    SET_FOREACH(Room, room, company->rooms) {
         temp_calculation = getRoomRecommendedCalculation(room, P_e, skill_level);
-        if(*best_calculation > temp_calculation){
-            best_room = room;
+        if (*best_calculation > temp_calculation) {
+            *roomId = getRoomId(room);
             *best_calculation = temp_calculation;
+            *companyFaculty = *tempCompanyFaculty;
+            *roomPrice = getCompanyRoomPriceById(company, *roomId);
+        } else if (*best_calculation == temp_calculation) {
+            calcResult = calculateFacultyDistanceFromClient(escaperFaculty, *companyFaculty,
+                                                            *tempCompanyFaculty, tempId, *roomId, &companyResult);
+            if (companyResult == COMPANY_CALC_BY_FACULTY) {
+                *companyFaculty = (TechnionFaculty) companyResult;
+                if (*companyFaculty == *tempCompanyFaculty) {
+                    *roomId = tempId;
+                    *roomPrice = getCompanyRoomPriceById(company, *roomId);
+                }
+            } else {
+                *roomId = calcResult;
+                if (*roomId == tempId) {
+                    *companyFaculty = *tempCompanyFaculty;
+                    *roomPrice = getCompanyRoomPriceById(company, *roomId);
+                }
+            }
         }
     }
 
-
-    return getRoomId(best_room);
+    return best_room;
 }
 
 /**
@@ -549,8 +563,8 @@ int getCompanyRoomDifficultyById(Company company, int roomId)
 int getCompanyRoomNumOfPplById(Company company, int roomId)
 {
     SET_FOREACH(Room, room, company->rooms){
-        if( getRoomId(room) == roomId){
-            return getRoomNumOfPpl(room);
+        if( getRoomNumOfPpl(room) == roomId){
+            return getRoomPrice(room);
         }
     }
 
