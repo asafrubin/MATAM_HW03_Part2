@@ -12,24 +12,24 @@ static bool testCreateRoom() {
     char *goodEmail = "asaf@gmail.com";
     char *badEmail1 = "nate@@gmail.com";
     char *badEmail2 = "BadEmail";
-    char *badEmail3 = "@@";
+    //char *badEmail3 = "@@";
 
-    int id = 5, price = 4*15, num_ppl = 4, open_time = 12, close_time = 16, goodDifficulty = 8, badDifficulty = 12 ,
-        P_e = 2, skill_level = 1 , test = -2;
+    int id = 5, price = 4 * 15, num_ppl = 4, open_time = 12, close_time = 16, goodDifficulty = 8, badDifficulty = 12;
+    //        P_e = 2, skill_level = 1, test = -2;
 
-    int outputID = 0, output_price = 0, output_num_of_people = 0, output_room_difficulty = 0;
-    double room_recommended_calculation = 0;
+    //int outputID = 0, output_price = 0, output_num_of_people = 0, output_room_difficulty = 0;
+    //double room_recommended_calculation = 0;
     Room room = NULL;
-    Room copy_of_room = NULL;
-    Room second_room = NULL;
+    //Room copy_of_room = NULL;
+    //Room second_room = NULL;
     roomResult result;
 
     //createRoom tests
     room = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
     ASSERT_TEST(result == ROOMS_SUCCESS);
 
-    second_room = createRoom(goodEmail, (id + 10), price, num_ppl, open_time, close_time, goodDifficulty, &result);
-    ASSERT_TEST(result == ROOMS_SUCCESS);
+    //second_room = createRoom(goodEmail, (id + 10), price, num_ppl, open_time, close_time, goodDifficulty, &result);
+    //ASSERT_TEST(result == ROOMS_SUCCESS);
 
     //removeRoom(room);
     room = createRoom(badEmail1, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
@@ -42,8 +42,19 @@ static bool testCreateRoom() {
     ASSERT_TEST(result == ROOMS_INVALID_PARAMETER);
     removeRoom(room);
 
+    return true;
+}
 
-    //copyRoom tests - checks that all fields match
+static bool testcopyRoom() {
+    char *goodEmail = "asaf@gmail.com";
+
+    int id = 5, price = 4 * 15, num_ppl = 4, open_time = 12, close_time = 16, goodDifficulty = 8;
+
+    int outputID = 0, output_price = 0, output_num_of_people = 0, output_room_difficulty = 0;
+    Room room = NULL;
+    Room copy_of_room = NULL;
+    roomResult result;
+
     room = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
     ASSERT_TEST(result == ROOMS_SUCCESS);
 
@@ -62,9 +73,51 @@ static bool testCreateRoom() {
     output_room_difficulty = getRoomDifficulty(copy_of_room);
     ASSERT_TEST(output_room_difficulty == goodDifficulty);
 
+    removeRoom(room);
+    removeRoom(copy_of_room);
+
+    return true;
+}
+
+static bool testRoomCalculation() {
+    char *goodEmail = "asaf@gmail.com";
+
+    int id = 5, price = 4 * 15, num_ppl = 4, open_time = 12, close_time = 16, goodDifficulty = 8, P_e = 2,
+            skill_level = 1;
+
+    double room_recommended_calculation = 0;
+    Room room = NULL;
+    roomResult result;
+
+    room = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
+    ASSERT_TEST(result == ROOMS_SUCCESS);
+
     //tests room calculation
     room_recommended_calculation = getRoomRecommendedCalculation(room, P_e, skill_level);
     ASSERT_TEST(room_recommended_calculation == 53);
+
+    removeRoom(room);
+
+    return true;
+}
+
+static bool testcompareRoom() {
+    char *goodEmail = "asaf@gmail.com";
+
+    int id = 5, price = 4 * 15, num_ppl = 4, open_time = 12, close_time = 16, goodDifficulty = 8, test = -2;
+
+    Room room = NULL;
+    Room copy_of_room = NULL;
+    Room second_room = NULL;
+    roomResult result;
+
+    room = createRoom(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty, &result);
+    ASSERT_TEST(result == ROOMS_SUCCESS);
+
+    second_room = createRoom(goodEmail, (id + 10), price, num_ppl, open_time, close_time, goodDifficulty, &result);
+    ASSERT_TEST(result == ROOMS_SUCCESS);
+
+    copy_of_room = copyRoom(room);
 
     //tests compare room
     test = compareRoom(room, copy_of_room);
@@ -72,29 +125,22 @@ static bool testCreateRoom() {
     test = compareRoom(room, second_room);
     ASSERT_TEST(test == -10);
 
-    //tests check room parameters
-    result = checkRoomParameters(badEmail3, id, price, num_ppl, open_time, close_time, goodDifficulty);
-    ASSERT_TEST(result == ROOMS_INVALID_PARAMETER);
-
-    result = checkRoomParameters(goodEmail, id, price, num_ppl, open_time, close_time, goodDifficulty);
-    ASSERT_TEST(result == ROOMS_SUCCESS);
-
     removeRoom(room);
     removeRoom(copy_of_room);
     removeRoom(second_room);
 
-    //void* setCopyRoom(void* roomToCopy);
-
-    //void setRemoveRoom(void* roomToRemove);
-
-    //int setCompareRoom(void* firstRoom , void* secondRoom);
-
     return true;
 }
+
 
 int main (int argv, char** arc){
 
     RUN_TEST(testCreateRoom);
+    RUN_TEST(testcopyRoom);
+    RUN_TEST(testRoomCalculation);
+    RUN_TEST(testcompareRoom);
+
+
 
     return 0;
 }

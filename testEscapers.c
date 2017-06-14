@@ -1,73 +1,118 @@
 #include "test_utilities.h"
 #include "mtm_ex3.h"
-#include "Companies.h"
+#include "Escapers.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 
+static bool testcreateEscaper()
+{
+    char *name = "NatetheGreat@";
+    char *bad_name = "Nate@theGreat@";
+    TechnionFaculty faculty = ELECTRICAL_ENGINEERING;
+    int skill = 10 , bad_skill = -7;
 
-static bool testCreateEscaper() {
 
     EscaperResult result;
-    Escaper newEscaper = NULL;
-    char *goodEmail = "asaf@gmail.com";
-    char *badEmail1 = "asaf@@gmail.com";
-    char *badEmail2 = "aaaaa";
+    Escaper escaper = NULL;
 
-    int goodSkill = 9, badSkill = 12;
-    TechnionFaculty goodFaculty = COMPUTER_SCIENCE;
+    escaper = createEscaper(name , faculty , skill , &result);
+    ASSERT_TEST(escaper != NULL);
+    ASSERT_TEST(result == ESCAPER_SUCCESS);
+    freeEscaper(escaper);
 
-    //first test - all good
-    newEscaper = createEscaper(goodEmail, goodFaculty, goodSkill, &result);
-    freeEscaper(&newEscaper);
+    escaper = createEscaper(bad_name , faculty , skill , &result);
+    ASSERT_TEST(escaper == NULL);
+    ASSERT_TEST(result == ESCAPER_INVALID_PARAMETER);
+    freeEscaper(escaper);
+
+    escaper = createEscaper(name , faculty , bad_skill , &result);
+    ASSERT_TEST(escaper == NULL);
+    ASSERT_TEST(result == ESCAPER_INVALID_PARAMETER);
+    freeEscaper(escaper);
+
+    return true;
+}
+
+
+static bool testescaperCopyElement()
+{
+    char *name = "NatetheGreat@";
+    char *testmail = NULL;
+    TechnionFaculty faculty = ELECTRICAL_ENGINEERING;
+    TechnionFaculty test_faculty = UNKNOWN;
+    int skill = 10;
+    int test_skill = -1;
+
+    EscaperResult result;
+    Escaper escaper = NULL;
+    Escaper copy_escaper = NULL;
+
+    escaper = createEscaper(name , faculty , skill , &result);
+    ASSERT_TEST(escaper != NULL);
     ASSERT_TEST(result == ESCAPER_SUCCESS);
 
-    //second test - bad email
-    newEscaper = createEscaper(badEmail1, goodFaculty, goodSkill, &result);
-    freeEscaper(&newEscaper);
+    copy_escaper = escaperCopyElement(escaper);
+    test_skill = escaperGetSkill(copy_escaper);
+    ASSERT_TEST(test_skill == skill);
+    testmail = escaperGetEmail(copy_escaper , &result);
+    ASSERT_TEST(result == ESCAPER_SUCCESS);
+    ASSERT_TEST(strcmp(testmail , name) == 0);
 
-    ASSERT_TEST(result == ESCAPER_INVALID_PARAMETER);
+    test_faculty = escaperGetFaculty(copy_escaper);
+    ASSERT_TEST(test_faculty == faculty);
 
-    //third test - bad email 2
-    newEscaper = createEscaper(badEmail2, goodFaculty, goodSkill, &result);
-    freeEscaper(&newEscaper);
-    ASSERT_TEST(result == ESCAPER_INVALID_PARAMETER);
-
-    //third test - bad skill
-    newEscaper = createEscaper(goodEmail, goodFaculty, badSkill, &result);
-    freeEscaper(&newEscaper);
-    ASSERT_TEST(result == ESCAPER_INVALID_PARAMETER);
+    freeEscaper(escaper);
+    freeEscaper(copy_escaper);
 
     return true;
 }
 
-static bool testCopyElement()
+int escaperCompare(Escaper escaper1, Escaper escaper2);
+static bool testescaperCompare()
 {
-    Escaper newEscaper = NULL;
-    Escaper copiedEscaper = NULL;
+    char *name = "NatetheGreat@";
+    char *testmail = "Natethe@notsogreat";
+    TechnionFaculty faculty = ELECTRICAL_ENGINEERING;
+    int skill = 10;
+    int test = 100;
+
     EscaperResult result;
-    char *goodEmail = "asaf@gmail.com", *copiedEmail = NULL;
-    int goodSkill = 9;
-    TechnionFaculty goodFaculty = COMPUTER_SCIENCE;
+    Escaper escaper = NULL;
+    Escaper escaper2 = NULL;
+    Escaper copy_escaper = NULL;
 
+    escaper = createEscaper(name , faculty , skill , &result);
+    ASSERT_TEST(escaper != NULL);
+    ASSERT_TEST(result == ESCAPER_SUCCESS);
 
-    newEscaper = createEscaper(goodEmail, goodFaculty, goodSkill, &result);
+    escaper2 = createEscaper(testmail , faculty , skill , &result);
+    ASSERT_TEST(escaper != NULL);
+    ASSERT_TEST(result == ESCAPER_SUCCESS);
 
-    copiedEscaper = copyElement(newEscaper);
-    escaperGetEmail( copiedEscaper, &copiedEmail );
-    ASSERT_TEST( strcmp(copiedEmail, goodEmail) ==  0 );
-    freeEscaper(&newEscaper);
-    freeEscaper(&copiedEscaper);
+    copy_escaper = escaperCopyElement(escaper);
+
+    test = escaperCompare(escaper , copy_escaper);
+    ASSERT_TEST(test == 0);
+
+    test = escaperCompare(escaper , escaper2);
+    ASSERT_TEST(test != 0);
+
+    freeEscaper(escaper);
+    freeEscaper(escaper2);
+    freeEscaper(copy_escaper);
 
     return true;
 }
+
 
 int main (int argv, char** arc){
 
-    RUN_TEST(testCreateEscaper);
-    RUN_TEST(testCopyElement);
+    RUN_TEST(testcreateEscaper);
+    RUN_TEST(testescaperCopyElement);
+    RUN_TEST(testescaperCompare);
 
     return 0;
 }

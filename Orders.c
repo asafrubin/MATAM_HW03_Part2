@@ -53,6 +53,19 @@ static int calculatePrice(bool discount ,int roomPrice, int req_num_of_ppl)
     return roomPrice;
 }
 
+/**
+ * Creates a new Element of order type
+ * @param escaperEmail : email of escaper who requested order
+ * @param escaperFaculty : faculty of escaper
+ * @param companyFaculty : faculty to which the room belongs
+ * @param roomID : unique id of room
+ * @param req_num_of_ppl : number of people to enter room
+ * @param req_hour : hour in which customer will enter room
+ * @param req_day : day in which customer will enter room
+ * @param roomPrice : price to be payed
+ * @param result : orderResult (ENUM)
+ * @return : newly created order
+ */
 Order createOrder(char *escaperEmail, TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty, int roomID,
                   int req_num_of_ppl, int req_hour, int req_day, int roomPrice, orderResult *result)
 {
@@ -136,6 +149,11 @@ Order copyOrder(Order order_to_copy)
     return copy_of_order;
 }
 
+/**
+ * Aux function used by list.h
+ * @param order_to_copy
+ * @return
+ */
 ListElement listCopyOrder(ListElement order_to_copy)
 {
     return copyOrder( order_to_copy );
@@ -154,6 +172,11 @@ void freeOrder(Order order)
     }
 }
 
+/**
+ * Aux function used by list.h
+ * @param order_to_copy
+ * @return
+ */
 void listFreeOrder(ListElement order)
 {
     freeOrder(order);
@@ -170,6 +193,11 @@ int getOrderPrice(Order order)
     return order->price;
 }
 
+/**
+ * Used to get the day from a created order
+ * @param order : pointer to order inquired
+ * @return : day of order inquired
+ */
 int getOrderDay(Order order)
 {
     if(order == NULL){
@@ -179,6 +207,11 @@ int getOrderDay(Order order)
     return order->req_day;
 }
 
+/**
+ * Used to get the hour from a created order
+ * @param order : pointer to order inquired
+ * @return : hour of order inquired
+ */
 int getOrderHour(Order order)
 {
     if(order == NULL){
@@ -188,6 +221,11 @@ int getOrderHour(Order order)
     return order->req_hour;
 }
 
+/**
+ * Used to get the roomID from a created order
+ * @param order : pointer to order inquired
+ * @return : roomID of order inquired
+ */
 int getOrderRoomId(Order order)
 {
     if(order == NULL){
@@ -197,6 +235,11 @@ int getOrderRoomId(Order order)
     return order->roomID;
 }
 
+/**
+ * Used to get the escaper email from a created order
+ * @param order : pointer to order inquired
+ * @return : escaper email of order inquired
+ */
 char *getOrderEmail(Order order)
 {
     char *email = NULL;
@@ -214,18 +257,33 @@ char *getOrderEmail(Order order)
     return email;
 }
 
+/**
+ * Used to get the faculty which owns the room from a created order
+ * @param order : pointer to order inquired
+ * @return : faculty which owns the room of order inquired
+ */
 TechnionFaculty getOrderRoomFaculty(Order order)
 {
     assert(order != NULL);
     return order->companyFaculty;
 }
 
+/**
+ * Used to bring order closer to current day --(days left to order)
+ * @param order : order which to apply to
+ */
 void increaseOrderDay(Order order)
 {
     assert(order != NULL);
     order->req_day--;
 }
 
+/**
+ * Compares a filter key of orders with requested day
+ * @param order : order which to apply to
+ * @param key : key used by list.h
+ * @return : if inquired order matches key
+ */
 bool orderDayArrived(ListElement order, ListFilterKey key)
 {
     Order checkOrder = order;
@@ -237,6 +295,12 @@ bool orderDayArrived(ListElement order, ListFilterKey key)
     return false;
 }
 
+/**
+ * Compares a filter key of orders with requested day
+ * @param order : order which to apply to
+ * @param key : key used by list.h
+ * @return : if inquired order matches key
+ */
 bool orderDayNotArrived(ListElement order, ListFilterKey key)
 {
     Order checkOrder = order;
@@ -248,18 +312,34 @@ bool orderDayNotArrived(ListElement order, ListFilterKey key)
     return false;
 }
 
+/**
+ * Creates a list of orders matching a certain key (requested day >= 0)
+ * @param ListOfOrders : list of orders
+ * @return : new list matching key requirements
+ */
 List createOrderDayNotArrivedFilteredList(List ListOfOrders)
 {
     int key = 0;
     return listFilter(ListOfOrders, orderDayNotArrived, &key);
 }
 
+/**
+ * Creates a list of orders matching a certain key (requested day < 0)
+ * @param ListOfOrders : list of orders
+ * @return : new list matching key requirements
+ */
 List createOrderDayArrivedFilteredList(List ListOfOrders)
 {
     int key = 0;
     return listFilter(ListOfOrders, orderDayArrived, &key);
 }
 
+/**
+ * Used to find order
+ * @param order1
+ * @param order2
+ * @return
+ */
 int hourOfDay(ListElement order1, ListElement order2)
 {
 
@@ -276,11 +356,23 @@ int hourOfDay(ListElement order1, ListElement order2)
     return result;
 }
 
+/**
+ * Reorganizes list of orders by hour
+ * @param orders : list of orders
+ */
 void sortOrdersByHour(List orders)
 {
     listSort(orders, hourOfDay);
 }
 
+/**
+ * Prints order to output stream
+ * @param outputStream : pointer to output stream
+ * @param order : order to print
+ * @param escaperSkill : skill of escaper
+ * @param roomDifficulty : dificulty of room
+ * @param companyEmail : email of company
+ */
 void printOrder(FILE *outputStream, Order order, int escaperSkill, int roomDifficulty, char *companyEmail)
 {
     mtmPrintOrder(outputStream, order->escaperEmail, escaperSkill ,order->escaperFaculty, companyEmail,

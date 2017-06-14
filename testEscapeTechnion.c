@@ -119,8 +119,9 @@ static bool testMtmRoomRemove()
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
     mtmErrorCode = mtmEscaperAdd("good@email", ELECTRICAL_ENGINEERING, 9, escapeTechnion);
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder("good@email", companyFaculty, 25, 0, 0, 4, escapeTechnion);
+    mtmErrorCode = mtmEscaperOrder("good@email", companyFaculty, 25, 12, 0, 4, escapeTechnion);
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
+
 
     /*Start testing the RoomRemove*/
 
@@ -217,7 +218,7 @@ static bool testMtmEscaperOrder()
             companyFaculty1 = COMPUTER_SCIENCE, companyFaculty2 = BIOLOGY;
     MtmErrorCode mtmErrorCode;
     int goodSkill = 5;
-    int id1 = 5, id2 = 6, price = 20, numOfPpl = 4, openHour = 12, closeHour = 16, difficulty = 9;
+    int id1 = 5, id2 = 6, price = 20, numOfPpl = 4, openHour = 7, closeHour = 16, difficulty = 9;
 
     escapeTechnion = mtmCreateEscapeTechnion(outputStream);
     ASSERT_TEST( escapeTechnion != NULL );
@@ -236,31 +237,31 @@ static bool testMtmEscaperOrder()
 
     //start test escaperOrder()
     //good parameters
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, id2, 0, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, id2, 12, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty1, id1, 1, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty1, id1, 8, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty2, id2, 1, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty2, id2, 8, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty1, id1, 0, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty1, id1, 15, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
     //check Order Collide
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, id2, 0, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, id2, 12, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_CLIENT_IN_ROOM);
 
     /**************check Error Sequence*************/
 
     // email not exist and bad start time
     mtmErrorCode = mtmEscaperOrder(notExistEscaperEmail, companyFaculty2, id2, 23, 0, 5, escapeTechnion );
-    ASSERT_TEST(mtmErrorCode == MTM_INVALID_PARAMETER);
-    //check Error Sequence: good email but not exist, and bad room id
-    mtmErrorCode = mtmEscaperOrder(notExistEscaperEmail, companyFaculty2, 25, 9, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_CLIENT_EMAIL_DOES_NOT_EXIST);
+    //check Error Sequence: good email but not exist, and bad room id
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, 25, 9, 0, 5, escapeTechnion );
+    ASSERT_TEST(mtmErrorCode == MTM_ID_DOES_NOT_EXIST);
     //check Error Sequence: order collide, and bad room id
     mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, 25, 0, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_ID_DOES_NOT_EXIST);
     //check Error Sequence: client in room, and room not available
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty1, id1, 1, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty1, id1, 15, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_CLIENT_IN_ROOM);
 
     //need to create test for order discount
@@ -350,13 +351,13 @@ static bool testMtmReportDay()
 
     //start test escaperOrder()
     //good parameters
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, id2, 0, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty2, id2, 12, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty1, id1, 1, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail1, companyFaculty1, id1, 13, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty2, id2, 1, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty2, id2, 13, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
-    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty1, id1, 0, 0, 5, escapeTechnion );
+    mtmErrorCode = mtmEscaperOrder(goodEscaperEmail2, companyFaculty1, id1, 15, 0, 5, escapeTechnion );
     ASSERT_TEST(mtmErrorCode == MTM_SUCCESS);
 
     mtmReportDay(escapeTechnion);
@@ -370,6 +371,8 @@ static bool testMtmReportDay()
     mtmDestroyEscapeTechnion(escapeTechnion);
     return true;
 }
+
+
 
 int main (int argv, char** arc)
 {

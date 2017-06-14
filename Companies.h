@@ -54,7 +54,7 @@ SetElement setCopyCompany(SetElement company);
 
 Company createCompany(char *email, TechnionFaculty faculty, CompanyResult *result);
 
-CompanyResult getCompanyRooms(Company targetCompany , void *rooms);
+//CompanyResult getCompanyRooms(Company targetCompany , void *rooms);
 
 CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num_ppl,int open_time,
                              int close_time,int diffuculty, Company company);

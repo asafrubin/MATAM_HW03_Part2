@@ -17,7 +17,18 @@ struct SRooms{
     int difficulty;
 };
 
-//requires that PARSER pass on deconstucted working_hrs
+/**
+ * Creates an element of room type
+ * @param email : company room email
+ * @param id : unique id of email
+ * @param price : price for room (multipliers of 4)
+ * @param num_ppl : number of people recommend
+ * @param time_start : room openning time
+ * @param time_finish : room closing time
+ * @param difficulty : room difficulty
+ * @param result : roomResult (ENUM)
+ * @return : struct of newly created room
+ */
 Room createRoom(char *email , int id , int price , int num_ppl , int time_start , int time_finish , int difficulty
                       , roomResult *result)
 {
@@ -57,6 +68,17 @@ Room createRoom(char *email , int id , int price , int num_ppl , int time_start 
     return newRoom;
 }
 
+/**
+ * Checks that given parameters are acceptable to create a room
+ * @param email : company email
+ * @param id : room id
+ * @param price : room price
+ * @param num_ppl : number of people
+ * @param time_start : room openning time
+ * @param time_finish : room close time
+ * @param difficulty : room difficulty
+ * @return : roomResult (ENUM)
+ */
 roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
                                int time_start, int time_finish, int difficulty)
 {
@@ -82,6 +104,12 @@ roomResult checkRoomParameters(char *email, int id, int price, int num_ppl,
     return ROOMS_SUCCESS;
 }
 
+/**
+ *Checks if room is open during requested hour
+ * @param room : room to check
+ * @param req_hour : hour requested
+ * @return : roomResult (ENUM)
+ */
 roomResult roomCheckIfOpen(Room room, int req_hour)
 {
     assert(room != NULL);
@@ -92,6 +120,11 @@ roomResult roomCheckIfOpen(Room room, int req_hour)
     return ROOMS_ROOM_NOT_AVAILABLE;
 }
 
+/**
+ * Creates a copy of a given room
+ * @param roomToCopy : room to copy
+ * @return : returns a room struct which is identical to given room
+ */
 Room copyRoom(Room roomToCopy)
 {
     Room copyOfRoom = NULL;
@@ -103,20 +136,36 @@ Room copyRoom(Room roomToCopy)
     return copyOfRoom;
 }
 
+/**
+ * Removes a given room
+ * @param room : room to remove
+ */
 void removeRoom(Room room)
 {
     if(room){
+        assert(room->email != NULL);
         free(room->email);
         free(room);
         }
 
 }
 
+/**
+ * Compares between to rooms by their id
+ * @param firstRoom
+ * @param secondRoom
+ * @return '0' if identical, else other int
+ */
 int compareRoom(Room firstRoom, Room secondRoom)
 {
     return ((firstRoom->id) - (secondRoom->id));
 }
 
+/**
+ * Checks if email is valid according to specific rules
+ * @param name : email
+ * @return roomResult (ENUM)
+ */
 roomResult static checkEmail(char *name)
 {
     int counter = 0;
@@ -134,6 +183,11 @@ roomResult static checkEmail(char *name)
     return ROOMS_SUCCESS;
 }
 
+/**
+ * Retrieves room ID
+ * @param room
+ * @return room id
+ */
 int getRoomId(Room room)
 {
    assert(room != NULL);
@@ -141,23 +195,43 @@ int getRoomId(Room room)
     return room->id;
 }
 
+/**
+ * Retrieves room price
+ * @param room
+ * @return room price
+ */
 int getRoomPrice(Room room)
 {
     assert(room != NULL);
     return room->price;
 }
 
+/**
+ * Retrieves room number of people recommended
+ * @param room
+ * @return room number of people recommended
+ */
 int getRoomNumOfPpl(Room room)
 {
     assert(room != NULL);
     return room->num_of_ppl;
 }
 
-int getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
+/**
+ * Returns room calculation according to a given equation
+ * @param room
+ * @return calculation of equation
+ */
+double getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
 {
-    return (int)( pow( (room->num_of_ppl - P_e), 2) + pow( (room->difficulty - skill_level), 2) );
+    return ( pow( (room->num_of_ppl - P_e), 2) + pow( (room->difficulty - skill_level), 2) );
 }
 
+/**
+ * Retrieves room difficulty
+ * @param room
+ * @return room difficulty
+ */
 int getRoomDifficulty(Room room)
 {
     assert(room != NULL);

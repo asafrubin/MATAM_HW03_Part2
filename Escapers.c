@@ -13,7 +13,10 @@ struct SEscaper{
     int skill_level;
 };
 
-//free the inside of the escaper
+/**
+ * Frees memory allocated to escaper element
+ * @param escaper : element to free
+ */
 void freeEscaper(Escaper escaper)
 {
     if(escaper) {
@@ -24,12 +27,20 @@ void freeEscaper(Escaper escaper)
     }
 }
 
+/**
+ * Aux function used by set.h
+ * @param escaper
+ */
 void SetFreeEscaper(SetElement escaper)
 {
     freeEscaper( (SetElement)escaper );
 }
 
-//copies an escaper element and returns a pointer to a new element
+/**
+ * Creates a copy of escaper element
+ * @param escaper : element to copy
+ * @return : copy of escaper element
+ */
 Escaper escaperCopyElement(Escaper escaper)
 {
     Escaper escaperCopy = NULL;
@@ -55,11 +66,22 @@ Escaper escaperCopyElement(Escaper escaper)
     return escaperCopy;
 }
 
+/**
+ * Aux used by set.h
+ * @param escaper
+ * @return
+ */
 SetElement setEscaperCopyElement(SetElement escaper)
 {
     return (SetElement)escaperCopyElement( (Escaper)escaper );
 }
 
+/**
+ * Compares between to escaper elements
+ * @param escaper1
+ * @param escaper2
+ * @return : '0' if identical other int else
+ */
 int escaperCompare(Escaper escaper1, Escaper escaper2)
 {
     assert(escaper1 != NULL);
@@ -67,11 +89,24 @@ int escaperCompare(Escaper escaper1, Escaper escaper2)
     return strcmp( escaper1->email, escaper2->email);
 }
 
+/**
+ * Aux used by set.h
+ * @param escaper
+ * @return
+ */
 int SetEscaperCompare(SetElement escaper1, SetElement escaper2)
 {
     return escaperCompare( (Escaper)escaper1, (Escaper)escaper2 );
 }
 
+/**
+ * Creates a new escaper element
+ * @param name : email of new escaper
+ * @param faculty : faculty to which the escaper belongs
+ * @param skill : escaper skill level
+ * @param result : EscaperResult (ENUM)
+ * @return : newly created escaper
+ */
 Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperResult *result)
 {
     Escaper newEscaper = NULL;
@@ -110,7 +145,11 @@ Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperRes
     return newEscaper;
 }
 
-//checking for a valid email
+/**
+ * Checks if email is valid according to specific rules
+ * @param name : email
+ * @return roomResult (ENUM)
+ */
 EscaperResult static checkEmail(char *name)
 {
     if(name == NULL){
@@ -132,6 +171,12 @@ EscaperResult static checkEmail(char *name)
     return ESCAPER_SUCCESS;
 }
 
+/**
+ * Retrieves an escapers email
+ * @param escaper : escaper which is inquired about
+ * @param result : EscaperResult (ENUM)
+ * @return : string which hilds escapers email
+ */
 char *escaperGetEmail(Escaper escaper, EscaperResult *result)
 {
     char *email = NULL;
@@ -153,11 +198,23 @@ char *escaperGetEmail(Escaper escaper, EscaperResult *result)
     return email;
 }
 
+/**
+ * Retrieves an escapers skill level
+ * @param escaper : escaper which is inquired about
+ * @param result : EscaperResult (ENUM)
+ * @return : skill level of escaper
+ */
 int escaperGetSkill(Escaper escaper)
 {
     return escaper->skill_level;
 }
 
+/**
+ * Retrieves an escapers faculty
+ * @param escaper : escaper which is inquired about
+ * @param result : EscaperResult (ENUM)
+ * @return : faculty of escaper
+ */
 TechnionFaculty escaperGetFaculty(Escaper escaper)
 {
     assert(escaper != NULL);
