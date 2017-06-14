@@ -6,7 +6,7 @@
 #include "Orders.h"
 #include "test_utilities.h"
 #include <limits.h>
-#include <mem.h>
+#include <string.h>
 #include <stdlib.h>
 #include <float.h>
 
@@ -36,7 +36,7 @@ EscapeTechnion mtmCreateEscapeTechnion(FILE *output)
         return NULL;
     }
     for (int i = 0; i < UNKNOWN; ++i) {
-        escapeTechnion->total_revenue[i] = -1;
+        escapeTechnion->total_revenue[i] = 0;
     }
     //init escapers
     escapeTechnion->escapers = setCreate(setEscaperCopyElement, SetFreeEscaper, SetEscaperCompare);
@@ -76,6 +76,7 @@ void mtmDestroyEscapeTechnion(EscapeTechnion escapeTechnion)
         setDestroy(escapeTechnion->escapers);
         listDestroy(escapeTechnion->orders);
         free(escapeTechnion->total_revenue);
+        free(escapeTechnion);
     }
 }
 
@@ -124,6 +125,26 @@ static MtmErrorCode translateSetResultToMtm(SetResult setResult)
             return MTM_SUCCESS;
     }
 }
+
+/*
+static int getCompanyRoomPriceByIdAndFaculty(EscapeTechnion  escapeTechnion, TechnionFaculty companyFaculty,
+                                                      int roomId)
+{
+    TechnionFaculty tempFaculty;
+    int price;
+
+    SET_FOREACH(Company, company, escapeTechnion->companies){
+        getCompanyFaculty(company, &tempFaculty);
+        if(tempFaculty == companyFaculty){
+           price = getCompanyRoomPriceById(company, roomId);
+            if(price != -1 ){
+                return price;
+            }
+        }
+    }
+    return -1;
+}
+*/
 
 static MtmErrorCode translateOrderResultToMtm(orderResult orderResult)
 {
@@ -258,39 +279,6 @@ static Company mtmGetCompanyByEmail(char *email, EscapeTechnion escapeTechnion, 
     return NULL;
 }
 
-static int calculateFacultyDistanceFromClient(TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty,
-                                              TechnionFaculty tempCompanyFaculty, int tempId, int id,
-                                              CompanyResult *companyResult){
-    int distance1, distance2;
-
-    distance1 = abs(companyFaculty - escaperFaculty);
-    distance2 = abs(tempCompanyFaculty - escaperFaculty);
-
-    if ((distance1 - distance2) == 0) {
-        if (companyFaculty == tempCompanyFaculty) {
-            *companyResult = COMPANY_CALC_BY_ID;
-            if(tempId < id){
-                return tempId;
-            }
-            else
-                return id;
-        }
-        if(companyFaculty < tempCompanyFaculty){
-            *companyResult = COMPANY_CALC_BY_FACULTY;
-            return companyFaculty;
-        }
-        else
-            *companyResult = COMPANY_CALC_BY_FACULTY;
-            return tempCompanyFaculty;
-    }
-    else if(distance1 < distance2 ){
-        *companyResult = COMPANY_CALC_BY_FACULTY;
-        return companyFaculty;
-    }
-    else
-        *companyResult = COMPANY_CALC_BY_FACULTY;
-        return tempCompanyFaculty;
-}
 static MtmErrorCode mtmCheckIfCompanyEmailExists(EscapeTechnion escapeTechnion, char *email)
 {
     char *companyEmail = NULL;
@@ -334,7 +322,7 @@ static char *mtmGetCompanyEmailByFaculty(Set Companies, TechnionFaculty companyF
 
 static TechnionFaculty mtmGetCompanyFacultyByEmail(Set companies, char *email, MtmErrorCode *mtmErrorCode)
 {
-    char *tempEmail;
+    char *tempEmail=NULL;
     CompanyResult companyResult;
     TechnionFaculty faculty;
 
@@ -345,11 +333,13 @@ static TechnionFaculty mtmGetCompanyFacultyByEmail(Set companies, char *email, M
             companyResult = getCompanyFaculty(company, &faculty);
             assert(companyResult == COMPANY_SUCCESS);
             *mtmErrorCode = MTM_SUCCESS;
+            free(tempEmail);
             return faculty;
         }
     }
 
     *mtmErrorCode = MTM_COMPANY_EMAIL_DOES_NOT_EXIST;
+    free(tempEmail);
     return UNKNOWN;
 }
 
@@ -409,6 +399,24 @@ static MtmErrorCode checkIfOrderExistForThisCompany(EscapeTechnion escapeTechnio
     }
 
     return MTM_SUCCESS;
+}
+
+static int mtmGetCompanyRecommendedRoomId(EscapeTechnion escapeTechnion,int numOfPpl,char *escaperEmail,
+                                          TechnionFaculty *companyFaculty, TechnionFaculty escaperFaculty, int *roomId,
+                                          int *roomPrice, CompanyResult *companyResult)
+{
+    int best_id=0, skill_level=0, calculation=INT_MAX;
+    skill_level = mtmGetEscaperSkillByEmail(escapeTechnion, escaperEmail);
+    TechnionFaculty tempCompanyFaculty;
+
+    SET_FOREACH(Company, company, escapeTechnion->companies){
+        getCompanyFaculty(company, &tempCompanyFaculty);
+        best_id = getCompanyRecommendedRoomId(company, numOfPpl, skill_level, &calculation, escaperFaculty,
+                                             companyFaculty, &tempCompanyFaculty, roomId, roomPrice);
+
+    }
+
+    return best_id;
 }
 
 static MtmErrorCode checkEmail(char *name)
@@ -586,6 +594,7 @@ MtmErrorCode mtmCompanyAdd(char *companyEmail, TechnionFaculty companyFaculty, E
         return translateSetResultToMtm(setResult);
     }
 
+    freeCompany(newCompany);
     return MTM_SUCCESS;
 }
 
@@ -721,6 +730,7 @@ MtmErrorCode mtmEscaperRemove(char *email, EscapeTechnion escapeTechnion)
     if(checkEmail(email) != MTM_SUCCESS){
         return MTM_INVALID_PARAMETER;
     }
+    removeOrderOfEscaper(escapeTechnion->orders, email);
 
     SET_FOREACH(Escaper, escaper, escapeTechnion->escapers){
         escaperEmail = escaperGetEmail(escaper, &escaperResult);
@@ -794,6 +804,7 @@ MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty companyFaculty,
         return translateListResultToMtm(listResult);
     }
 
+    freeOrder(newOrder);
     free(companyEmail);
     return MTM_SUCCESS;
 }
@@ -801,9 +812,8 @@ MtmErrorCode mtmEscaperOrder(char *escaperEmail, TechnionFaculty companyFaculty,
 MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnion escapeTechnion)
 {
 
-    int recommendedRoomId, tempRecommendedRoomId, skill_level, roomPrice, set_size=0, calcResult ;
-    double calculation=DBL_MAX, tempCalculation = DBL_MAX;
-    TechnionFaculty companyFaculty, tempCompanyFaculty, escaperFaculty;
+    int recommendedRoomId=0, roomPrice=0, set_size=0;
+    TechnionFaculty companyFaculty, escaperFaculty;
     orderResult orderResult;
     CompanyResult companyResult;
     MtmErrorCode mtmErrorCode;
@@ -835,13 +845,20 @@ MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnio
         return MTM_NO_ROOMS_AVAILABLE;
     }
 
-    skill_level = mtmGetEscaperSkillByEmail(escapeTechnion, escaperEmail);
     mtmErrorCode = mtmGetEscaperFacultyByEmail(escapeTechnion->escapers, escaperEmail, &escaperFaculty);
     if(mtmErrorCode != MTM_SUCCESS){
         return mtmErrorCode;
     }
 
+    mtmGetCompanyRecommendedRoomId(escapeTechnion, numOfPpl, escaperEmail, &companyFaculty, escaperFaculty,
+                                   &recommendedRoomId, &roomPrice, &companyResult );
+
+
+    /*
     SET_FOREACH(Company, company, escapeTechnion->companies){
+        if(tempRecommendedRoomId != 0){
+            tempRecommendedRoomId2 = tempRecommendedRoomId;
+        }
         tempRecommendedRoomId = getCompanyRecommendedRoomId(company, numOfPpl, skill_level, &tempCalculation);
         getCompanyFaculty(company, &tempCompanyFaculty);
         if(tempCalculation < calculation){
@@ -851,30 +868,34 @@ MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnio
             roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
         }
         else if(tempCalculation == calculation){
-            mtmGetEscaperFacultyByEmail(escapeTechnion->escapers, escaperEmail, &escaperFaculty);
             calcResult = calculateFacultyDistanceFromClient(escaperFaculty, companyFaculty, tempCompanyFaculty,
-                                                                tempRecommendedRoomId,recommendedRoomId,&companyResult);
+                                                                tempRecommendedRoomId2,recommendedRoomId,&companyResult);
             if(companyResult == COMPANY_CALC_BY_FACULTY){
                 companyFaculty = (TechnionFaculty)calcResult;
                 if(companyFaculty == tempCompanyFaculty){
-                    recommendedRoomId = tempRecommendedRoomId;
-                    roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
+                    recommendedRoomId = tempRecommendedRoomId2;
+                    roomPrice = getCompanyRoomPriceByIdAndFaculty(escapeTechnion, companyFaculty, recommendedRoomId);
                 }
             }
             else {
                 recommendedRoomId = calcResult;
-                if(recommendedRoomId == tempRecommendedRoomId){
+                if(recommendedRoomId == tempRecommendedRoomId2){
                     companyFaculty = tempCompanyFaculty;
-                    roomPrice = getCompanyRoomPriceById(company, recommendedRoomId);
+                    roomPrice = getCompanyRoomPriceByIdAndFaculty(escapeTechnion, companyFaculty, recommendedRoomId);
                 }
             }
 
         }
     }
+     */
+    assert(price != -1);
 
     for(int day=0; day < MAX_DAYS; day++){
         for(int time=0; time < MAX_HOUR; time++){
             assert(recommendedRoomId > 0 || roomPrice > 0);
+            if(checkIfRoomAvailable(escapeTechnion, companyFaculty, recommendedRoomId, time, day) != MTM_SUCCESS){
+                continue;
+            }
             new_order = createOrder(escaperEmail, escaperFaculty, companyFaculty, recommendedRoomId, numOfPpl,
                                     time, day, roomPrice, &orderResult);
             if(orderResult == ORDER_SUCCESS){
@@ -885,6 +906,7 @@ MtmErrorCode mtmEscaperRecommend(char *escaperEmail, int numOfPpl, EscapeTechnio
                 }
 
             }
+            freeOrder(new_order);
             return MTM_SUCCESS;
         }
     }
@@ -899,6 +921,7 @@ MtmErrorCode mtmReportDay(EscapeTechnion escapeTechnion)
     char *companyEmail = NULL, *escaperEmail = NULL;
     TechnionFaculty roomFaculty;
 
+
     LIST_FOREACH(Order, order, escapeTechnion->orders){
         increaseOrderDay(order);
     }
@@ -908,13 +931,13 @@ MtmErrorCode mtmReportDay(EscapeTechnion escapeTechnion)
         return MTM_OUT_OF_MEMORY;
     }
 
-    //need to add a secondary sort also third
     sortOrdersByHour(orders_arrived);
 
     mtmPrintDayHeader(escapeTechnion->outputStream, escapeTechnion->day, listGetSize(orders_arrived));
     LIST_FOREACH(Order, order, orders_arrived){
         escaperEmail = getOrderEmail(order);
         if(escaperEmail == NULL){
+            listDestroy(orders_arrived);
             return MTM_OUT_OF_MEMORY;
         }
         escaperSkill = mtmGetEscaperSkillByEmail(escapeTechnion, escaperEmail);
@@ -930,15 +953,17 @@ MtmErrorCode mtmReportDay(EscapeTechnion escapeTechnion)
     mtmPrintDayFooter(escapeTechnion->outputStream, escapeTechnion->day);
     free(escaperEmail);
     free(companyEmail);
+    listDestroy(orders_arrived);
 
     //remove all orders that arrived
+    escapeTechnion->day++;
     orders_not_arrived = createOrderDayNotArrivedFilteredList(escapeTechnion->orders);
     if(orders_not_arrived == NULL){
         return MTM_OUT_OF_MEMORY;
     }
     listDestroy(escapeTechnion->orders);
     escapeTechnion->orders = orders_not_arrived;
-    escapeTechnion->day++;
+
 
     return MTM_SUCCESS;
 }
@@ -967,18 +992,26 @@ MtmErrorCode mtmReportBest(EscapeTechnion escapeTechnion)
             second_faculty = i;
         }
     }
+    if(best_faculty == 0){
+        third_faculty++;
+    }
     if(second_faculty == 1){
-        third_faculty = 2;
+        third_faculty++;
     }
     //find third_faculty
-    for (int i = 0; i < UNKNOWN; i++) {
-        if(i == second_faculty){
-            continue;
-        }
+    for (int i = third_faculty; i < UNKNOWN; i++) {
         if(revenues[third_faculty] < revenues[i]){
+            if(i == second_faculty || i == best_faculty){
+                continue;
+            }
             third_faculty = i;
         }
+        if(revenues[third_faculty] == revenues[i]){
+
+        }
+
     }
+
     mtmPrintFacultiesHeader(escapeTechnion->outputStream, UNKNOWN, escapeTechnion->day, total_revenue);
     mtmPrintFaculty(escapeTechnion->outputStream,  (TechnionFaculty)best_faculty,  revenues[best_faculty]);
     mtmPrintFaculty(escapeTechnion->outputStream,  (TechnionFaculty)second_faculty,  revenues[second_faculty]);

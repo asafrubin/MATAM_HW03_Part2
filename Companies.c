@@ -115,6 +115,7 @@ int setCompareCompanies(SetElement firstCompany, SetElement secondCompany)
 {
     return compareCompanies( (Company)firstCompany, (Company)secondCompany );
 }
+
 void freeCompany(Company company)
 {
     if(company) {
@@ -134,10 +135,11 @@ Company copyCompany(Company company)
     Company newCompany = NULL;
     CompanyResult companyResult;
 
-    newCompany = createCompany(company->email , company->faculty , &companyResult);
+    newCompany = createCompany(company->email, company->faculty, &companyResult);
     if(newCompany == NULL){
         return NULL;
     }
+    setDestroy(newCompany->rooms);
     newCompany->rooms = setCopy(company->rooms);
     if(newCompany->rooms == NULL){
         free(newCompany);
@@ -191,6 +193,11 @@ Company createCompany(char *email, TechnionFaculty faculty, CompanyResult *resul
     return newCompany;
 }
 
+static void setRemoveRoom(SetElement room)
+{
+    removeRoom( (Room)room );
+}
+
 CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num_ppl,int open_time,
                              int close_time, int difficulty, Company company)
 {
@@ -213,6 +220,7 @@ CompanyResult addCompanyRoom(char *companyEmail,int roomId,int roomPrice,int num
         removeRoom(newRoom);
         return translateSetResult(setResult);
     }
+    removeRoom(newRoom);
 
     return COMPANY_SUCCESS;
 }
@@ -232,6 +240,7 @@ CompanyResult mtmCheckCompanyRoomParameters(char *companyEmail, int roomId, int 
     return COMPANY_SUCCESS;
 }
 
+/*
 CompanyResult removeCompanyRoom(Company company, int roomId)
 {
     SET_FOREACH(Room, room, company->rooms){
@@ -243,6 +252,7 @@ CompanyResult removeCompanyRoom(Company company, int roomId)
 
     return COMPANY_ROOM_ID_DOES_NOT_EXIST;
 }
+ */
 
 CompanyResult checkIfCompanyRoomIsOpenById(Company company, int roomId, int req_hour)
 {
@@ -262,11 +272,6 @@ CompanyResult checkIfCompanyRoomIsOpenById(Company company, int roomId, int req_
 static SetElement setCopyOfRoom(SetElement roomToCopy)
 {
     return  (SetElement)copyRoom( (Room)roomToCopy );
-}
-
-static void setRemoveRoom(SetElement room)
-{
-    removeRoom( (Room)room );
 }
 
 static int setCompareRoom(SetElement firstRoom, SetElement secondRoom)
@@ -318,22 +323,78 @@ CompanyResult getCompanyFaculty(Company company, TechnionFaculty *faculty)
     return COMPANY_SUCCESS;
 }
 
-int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, double *best_calculation)
+static int calculateFacultyDistanceFromClient(TechnionFaculty escaperFaculty, TechnionFaculty companyFaculty,
+                                              TechnionFaculty tempCompanyFaculty, int tempId, int id,
+                                              CompanyResult *companyResult)
 {
-    double temp_calculation=0;
-    Room best_room = NULL;
+    int distance1, distance2;
 
-    SET_FOREACH(Room, room, company->rooms){
+    distance1 = abs(companyFaculty - escaperFaculty);
+    distance2 = abs(tempCompanyFaculty - escaperFaculty);
+
+    if ((distance1 - distance2) == 0) {
+        if (companyFaculty == tempCompanyFaculty) {
+            *companyResult = COMPANY_CALC_BY_ID;
+            if(tempId < id){
+                return tempId;
+            }
+            else
+                return id;
+        }
+        if(companyFaculty < tempCompanyFaculty){
+            *companyResult = COMPANY_CALC_BY_FACULTY;
+            return companyFaculty;
+        }
+        else
+            *companyResult = COMPANY_CALC_BY_FACULTY;
+        return tempCompanyFaculty;
+    }
+    else if(distance1 < distance2 ){
+        *companyResult = COMPANY_CALC_BY_FACULTY;
+        return companyFaculty;
+    }
+    else
+        *companyResult = COMPANY_CALC_BY_FACULTY;
+    return tempCompanyFaculty;
+}
+
+int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, int *best_calculation,
+                                TechnionFaculty escaperFaculty, TechnionFaculty *companyFaculty,
+                                TechnionFaculty *tempCompanyFaculty, int *roomId, int *roomPrice)
+{
+    int temp_calculation = 0, best_room = 0, tempId=0, calcResult=0;
+    CompanyResult companyResult;
+
+    SET_FOREACH(Room, room, company->rooms) {
         temp_calculation = getRoomRecommendedCalculation(room, P_e, skill_level);
-        if(*best_calculation > temp_calculation){
-            best_room = room;
+        if (*best_calculation > temp_calculation) {
+            *roomId = getRoomId(room);
             *best_calculation = temp_calculation;
+            *companyFaculty = *tempCompanyFaculty;
+            *roomPrice = getCompanyRoomPriceById(company, *roomId);
+        } else if (*best_calculation == temp_calculation) {
+            calcResult = calculateFacultyDistanceFromClient(escaperFaculty, *companyFaculty,
+                                                            *tempCompanyFaculty, tempId, *roomId, &companyResult);
+            if (companyResult == COMPANY_CALC_BY_FACULTY) {
+                *companyFaculty = (TechnionFaculty) companyResult;
+                if (*companyFaculty == *tempCompanyFaculty) {
+                    *roomId = tempId;
+                    *roomPrice = getCompanyRoomPriceById(company, *roomId);
+                }
+            } else {
+                *roomId = calcResult;
+                if (*roomId == tempId) {
+                    *companyFaculty = *tempCompanyFaculty;
+                    *roomPrice = getCompanyRoomPriceById(company, *roomId);
+                }
+            }
         }
     }
 
-
-    return getRoomId(best_room);
+    return best_room;
 }
+
+
 
 int getCompanyRoomListSize(Company company)
 {

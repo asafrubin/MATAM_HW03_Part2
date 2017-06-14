@@ -106,7 +106,6 @@ Room copyRoom(Room roomToCopy)
 void removeRoom(Room room)
 {
     if(room){
-        assert(room->email != NULL);
         free(room->email);
         free(room);
         }
@@ -154,9 +153,9 @@ int getRoomNumOfPpl(Room room)
     return room->num_of_ppl;
 }
 
-double getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
+int getRoomRecommendedCalculation(Room room,int P_e,int skill_level)
 {
-    return ( pow( (room->num_of_ppl - P_e), 2) + pow( (room->difficulty - skill_level), 2) );
+    return (int)( pow( (room->num_of_ppl - P_e), 2) + pow( (room->difficulty - skill_level), 2) );
 }
 
 int getRoomDifficulty(Room room)

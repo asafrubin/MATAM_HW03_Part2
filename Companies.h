@@ -19,7 +19,9 @@ typedef enum {
     COMPANY_SUCCESS
 } CompanyResult;
 
-int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, double *best_calculation);
+int getCompanyRecommendedRoomId(Company company, int P_e, int skill_level, int *best_calculation,
+                                TechnionFaculty escaperFaculty, TechnionFaculty *companyFaculty,
+                                TechnionFaculty *tempCompanyFaculty, int *roomId, int *roomPrice);
 
 int getCompanyRoomPriceById(Company company, int roomId);
 

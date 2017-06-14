@@ -222,6 +222,7 @@ TechnionFaculty getOrderRoomFaculty(Order order)
 
 void increaseOrderDay(Order order)
 {
+    assert(order != NULL);
     order->req_day--;
 }
 
@@ -285,4 +286,15 @@ void printOrder(FILE *outputStream, Order order, int escaperSkill, int roomDiffi
     mtmPrintOrder(outputStream, order->escaperEmail, escaperSkill ,order->escaperFaculty, companyEmail,
                   order->companyFaculty, order->roomID, order->req_hour, roomDifficulty,
                   order->req_num_of_ppl, order->price);
+}
+
+void removeOrderOfEscaper(List orders, char *email)
+{
+
+    LIST_FOREACH(Order,order, orders){
+        if(strcmp(order->escaperEmail, email) == 0){
+            listRemoveCurrent(orders);
+            listGetFirst(orders);
+        }
+    }
 }

@@ -38,6 +38,7 @@ static MtmCommand subCommandCompanyToEnum(MtmCommand command, char *subCommand);
 static MtmCommand subCommandRoomToEnum(MtmCommand command, char *subCommand);
 static MtmCommand subCommandEscaperToEnum(MtmCommand command, char *subCommand);
 static MtmCommand subCommandReportToEnum(MtmCommand command, char *subCommand);
+int getopt(int, char * const [], const char *);
 
 /**************************************************************/
 /*  End Functions decleration  block                          */
@@ -56,18 +57,21 @@ static MtmCommand subCommandReportToEnum(MtmCommand command, char *subCommand);
  */
 MtmErrorCode static parser(FILE *inputStream, FILE *outputStream, EscapeTechnion escapeTechnion)
 {
-    char string[MAX_LEN] = { 0 };
+    char string[MAX_LEN+2] = { 0 };
     char *command = NULL, *subCommand = NULL;
     char *delimiter = " \t";
     MtmErrorCode result;
 
     while(!feof(inputStream)){
-        fgets(string, MAX_LEN, inputStream);
+        fgets(string, MAX_LEN+1, inputStream);
         command = strtok(string, delimiter);
         if(command[0] == '#' || command[0] == '\n'){
             continue;
         }
         subCommand = strtok(NULL, " \t\n");
+        if(command == NULL || subCommand == NULL){
+            continue;
+        }
         result = handleFullCommand( commandToEnum(command, subCommand), string, outputStream, escapeTechnion );
         if(result ==  MTM_OUT_OF_MEMORY) {
             return result;
@@ -440,6 +444,7 @@ void static fileClose(FILE *inputStream, FILE *outputstream, bool iflag, bool of
     if(oflag == true){
         fclose(outputstream);
     }
+    return;
 }
 
 int main(int argc, char *argv[])
@@ -448,33 +453,81 @@ int main(int argc, char *argv[])
     bool iflag = false, oflag = false;
     FILE *inputStream, *outputStream;
     extern char *optarg;
+    extern int opterr;
+    MtmErrorCode mtmErrorCode;
     char *string;
 
+    if( ( (argc-1) % 2) != 0 ){
+        mtmPrintErrorMessage(stderr, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+        return 0;
+    }
+    opterr = 0;
     while((c = getopt(argc, argv, ":i:o:")) != -1) {
 
         switch (c) {
             case 'i':
+                if(optarg == NULL){
+                    if(oflag){
+                        fclose(outputStream);
+                    }
+                    mtmPrintErrorMessage(stderr, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                    return 0;
+                }
                 iflag = true;
                 string = optarg;
                 inputStream = fopen(string, "r");
                 if (inputStream == NULL) {
+                    if(oflag) {
+                        fclose(outputStream);
+                    }
                     mtmPrintErrorMessage(stderr, MTM_CANNOT_OPEN_FILE);
                     return 0;
                 }
                 break;
             case 'o':
+                if(optarg == NULL){
+                    if(iflag){
+                        fclose(inputStream);
+                    }
+                    mtmPrintErrorMessage(stderr, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                    return 0;
+                }
                 oflag = true;
                 string = optarg;
                 outputStream = fopen(string, "w+");
                 if (outputStream == NULL) {
+                    if(iflag){
+                        fclose(outputStream);
+                        }
                     mtmPrintErrorMessage(stderr, MTM_CANNOT_OPEN_FILE);
                     return 0;
                 }
                 break;
             case '?':
+                if(oflag){
+                    fclose(outputStream);
+                }
+                if(iflag){
+                    fclose(inputStream);
+                }
+                mtmPrintErrorMessage(stderr, MTM_INVALID_COMMAND_LINE_PARAMETERS);
+                return 0;
+            case ':':
+                if(oflag){
+                    fclose(outputStream);
+                }
+                if(iflag){
+                    fclose(inputStream);
+                }
                 mtmPrintErrorMessage(stderr, MTM_INVALID_COMMAND_LINE_PARAMETERS);
                 return 0;
             default:
+                if(oflag){
+                    fclose(outputStream);
+                }
+                if(iflag){
+                    fclose(inputStream);
+                }
                 abort();
                 break;
         }
@@ -493,11 +546,14 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    parser(inputStream, outputStream, escapeTechnion);
-
-    mtmDestroyEscapeTechnion(escapeTechnion);
+    mtmErrorCode = parser(inputStream, outputStream, escapeTechnion);
+    if(mtmErrorCode != MTM_SUCCESS){
+        mtmPrintErrorMessage(stderr, mtmErrorCode);
+    }
 
     fileClose(inputStream, outputStream, iflag, oflag);
+
+    mtmDestroyEscapeTechnion(escapeTechnion);
 
     return 0;
 }

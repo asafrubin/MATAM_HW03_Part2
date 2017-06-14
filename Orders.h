@@ -52,6 +52,8 @@ List createOrderDayNotArrivedFilteredList(List ListOfOrders);
 
 void sortOrdersByHour(List orders);
 
+void removeOrderOfEscaper(List orders, char *email);
+
 TechnionFaculty getOrderRoomFaculty(Order order);
 
 void printOrder(FILE *outputStream, Order order, int escaperSkill, int roomDifficulty, char *companyEmail);

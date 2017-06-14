@@ -90,7 +90,7 @@ Escaper createEscaper(char *name, TechnionFaculty faculty, int skill, EscaperRes
         return NULL;
     }
 
-    newEscaper = malloc(sizeof(struct SEscaper));
+    newEscaper = malloc(sizeof(*newEscaper));
     if(newEscaper == NULL){
         *result = ESCAPER_OUT_OF_MEMORY;
         return NULL;
